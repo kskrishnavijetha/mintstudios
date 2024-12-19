@@ -28,6 +28,10 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("Starting token creation process");
+    console.log("Checking wallet connection...");
+    console.log("Window.solana:", window.solana);
+
     if (!window.solana?.isConnected) {
       toast({
         variant: "destructive",
@@ -40,16 +44,26 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
     setIsLoading(true);
 
     try {
+      console.log("Creating connection to Solana network...");
       const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      
+      console.log("Getting wallet address...");
       const walletAddress = window.solana.publicKey?.toString();
+      console.log("Wallet address:", walletAddress);
       
       if (!walletAddress) {
         throw new Error("Wallet address not found");
       }
 
-      // Create and send fee transaction
+      console.log("Creating fee transaction...");
       const feeTransaction = await createFeeTransaction(walletAddress, connection);
+      console.log("Fee transaction created:", feeTransaction);
+
+      console.log("Signing and sending fee transaction...");
       const signature = await window.solana.signAndSendTransaction(feeTransaction);
+      console.log("Fee transaction signature:", signature);
+
+      console.log("Confirming fee transaction...");
       await connection.confirmTransaction(signature);
 
       // Log successful fee payment
