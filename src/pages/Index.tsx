@@ -16,7 +16,7 @@ const Index = () => {
             Solana Token Creator
           </h1>
           <p className="text-muted-foreground">
-            Create your own SPL token on Solana blockchain
+            Create your own SPL token on Solana blockchain at just 0.03 SOL
           </p>
         </div>
 
