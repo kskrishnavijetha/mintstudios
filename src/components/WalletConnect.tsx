@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 const WalletConnect = () => {
   const [connected, setConnected] = useState(false);
@@ -28,10 +28,11 @@ const WalletConnect = () => {
 
       // This will trigger the wallet selector if multiple wallets are installed
       const resp = await solana.connect();
-      const publicKey = resp.publicKey.toString();
+      const walletPubKey = new PublicKey(resp.publicKey.toString());
+      const publicKey = walletPubKey.toString();
       
       // Verify connection by checking wallet balance
-      const balance = await connection.getBalance(resp.publicKey);
+      const balance = await connection.getBalance(walletPubKey);
       console.log("Connected to wallet:", publicKey);
       console.log("Wallet balance:", balance / 1e9, "SOL");
 
