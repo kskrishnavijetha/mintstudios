@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
+import { useState } from "react";
+import { Connection, clusterApiUrl, PublicKey, Keypair } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -61,10 +61,13 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       const feeSignature = await connection.sendRawTransaction(signedFeeTransaction.serialize());
       await connection.confirmTransaction(feeSignature);
 
+      // Create a new keypair for the mint
+      const mintKeypair = Keypair.generate();
+
       // Create the token mint
       const mint = await createMint(
         connection,
-        solana,
+        mintKeypair,
         walletPublicKey,
         walletPublicKey,
         Number(formData.decimals)
@@ -75,7 +78,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Get the token account
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        solana,
+        mintKeypair,
         mint,
         walletPublicKey
       );
@@ -85,7 +88,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Mint tokens to the token account
       const mintTx = await mintTo(
         connection,
-        solana,
+        mintKeypair,
         mint,
         tokenAccount.address,
         walletPublicKey,
