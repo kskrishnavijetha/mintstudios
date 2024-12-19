@@ -3,10 +3,15 @@ import { Loader2 } from "lucide-react";
 
 interface SubmitButtonProps {
   isLoading: boolean;
+  onClick: (e: React.FormEvent) => void;
 }
 
-export const SubmitButton = ({ isLoading }: SubmitButtonProps) => (
-  <Button className="w-full" type="submit" disabled={isLoading}>
+export const SubmitButton = ({ isLoading, onClick }: SubmitButtonProps) => (
+  <Button 
+    className="w-full" 
+    onClick={onClick}
+    disabled={isLoading}
+  >
     {isLoading ? (
       <>
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

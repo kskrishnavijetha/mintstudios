@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection } from "@solana/web3.js";
+import { Connection, clusterApiUrl } from "@solana/web3.js";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
@@ -11,6 +11,13 @@ interface TokenSubmitHandlerProps {
     name: string;
     symbol: string;
     supply: string;
+    decimals: string;
+    description: string;
+    image: string;
+    website: string;
+    twitter: string;
+    telegram: string;
+    discord: string;
   };
 }
 
@@ -33,17 +40,23 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
     setIsLoading(true);
 
     try {
-      const connection = new Connection("https://api.mainnet-beta.solana.com");
+      const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
       const transaction = await createFeeTransaction(walletAddress, connection);
 
-      // Request signature from wallet
       const { solana } = window;
       if (!solana?.isConnected) {
         throw new Error("Wallet not connected");
       }
 
       const signedTx = await solana.signAndSendTransaction(transaction);
-      await connection.confirmTransaction(signedTx, "confirmed");
+      console.log("Transaction sent:", signedTx);
+      
+      const confirmation = await connection.confirmTransaction(signedTx, 'confirmed');
+      console.log("Transaction confirmed:", confirmation);
+
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed");
+      }
 
       toast({
         title: "Token Created Successfully!",
@@ -54,7 +67,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       toast({
         variant: "destructive",
         title: "Error Creating Token",
-        description: "Failed to process the creation fee. Please try again.",
+        description: "Failed to process the token creation. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -64,7 +77,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
   return (
     <div className="space-y-4">
       <FeeDisplay />
-      <SubmitButton isLoading={isLoading} />
+      <SubmitButton isLoading={isLoading} onClick={handleSubmit} />
     </div>
   );
 };
