@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { createFeeTransaction, MARKET_ID_FEE } from "@/utils/transactionUtils";
 
 export const MarketIdCreator = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,19 +17,44 @@ export const MarketIdCreator = () => {
   });
 
   const handleCreate = async () => {
-    setIsLoading(true);
     try {
+      if (!window.solana || !window.solana.isConnected) {
+        toast({
+          variant: "destructive",
+          title: "Wallet Not Connected",
+          description: "Please connect your wallet first",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      
+      // Create and send fee transaction
+      const feeTransaction = await createFeeTransaction(
+        window.solana.publicKey.toString(),
+        connection,
+        MARKET_ID_FEE
+      );
+      
+      const signature = await window.solana.signAndSendTransaction(feeTransaction);
+      await connection.confirmTransaction(signature);
+
       console.log(`Creating market ID for token: ${formData.baseToken}`);
       // Here you would implement the actual market ID creation logic
-      setTimeout(() => {
-        toast({
-          title: "Market ID Created",
-          description: "Successfully created market ID",
-        });
-        setIsLoading(false);
-      }, 2000);
+
+      toast({
+        title: "Market ID Created",
+        description: "Successfully created market ID",
+      });
     } catch (error) {
       console.error("Error creating market ID:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create market ID",
+      });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -40,7 +67,7 @@ export const MarketIdCreator = () => {
     <div className="space-y-4 p-4 border rounded-lg">
       <div className="flex justify-between items-center">
         <h3 className="font-medium">Create Openbook Market ID</h3>
-        <span className="text-sm text-muted-foreground">Fee: 0.03 SOL</span>
+        <span className="text-sm text-muted-foreground">Fee: {MARKET_ID_FEE} SOL</span>
       </div>
 
       <div className="grid gap-2">

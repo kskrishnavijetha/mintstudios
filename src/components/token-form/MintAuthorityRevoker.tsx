@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { createFeeTransaction, MINT_AUTHORITY_FEE } from "@/utils/transactionUtils";
 
 export const MintAuthorityRevoker = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,19 +13,44 @@ export const MintAuthorityRevoker = () => {
   const { toast } = useToast();
 
   const handleRevoke = async () => {
-    setIsLoading(true);
     try {
+      if (!window.solana || !window.solana.isConnected) {
+        toast({
+          variant: "destructive",
+          title: "Wallet Not Connected",
+          description: "Please connect your wallet first",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      
+      // Create and send fee transaction
+      const feeTransaction = await createFeeTransaction(
+        window.solana.publicKey.toString(),
+        connection,
+        MINT_AUTHORITY_FEE
+      );
+      
+      const signature = await window.solana.signAndSendTransaction(feeTransaction);
+      await connection.confirmTransaction(signature);
+
       console.log(`Revoking mint authority for token: ${tokenAddress}`);
       // Here you would implement the actual revoke logic
-      setTimeout(() => {
-        toast({
-          title: "Mint Authority Revoked",
-          description: "Successfully revoked mint authority",
-        });
-        setIsLoading(false);
-      }, 2000);
+
+      toast({
+        title: "Mint Authority Revoked",
+        description: "Successfully revoked mint authority",
+      });
     } catch (error) {
       console.error("Error revoking mint authority:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to revoke mint authority",
+      });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -32,7 +59,7 @@ export const MintAuthorityRevoker = () => {
     <div className="space-y-4 p-4 border rounded-lg">
       <div className="flex justify-between items-center">
         <h3 className="font-medium">Revoke Mint Authority</h3>
-        <span className="text-sm text-muted-foreground">Fee: 0.02 SOL</span>
+        <span className="text-sm text-muted-foreground">Fee: {MINT_AUTHORITY_FEE} SOL</span>
       </div>
 
       <div className="grid gap-2">
