@@ -23,13 +23,23 @@ interface TokenSubmitHandlerProps {
 
 // Create a wallet adapter that implements the Signer interface
 const createWalletAdapter = (phantomWallet: any) => {
+  if (!phantomWallet || !phantomWallet.publicKey) {
+    throw new Error("Wallet not connected");
+  }
+
   return {
     publicKey: new PublicKey(phantomWallet.publicKey.toString()),
     secretKey: new Uint8Array(32), // Dummy secret key, not used with Phantom
     async signTransaction(tx: any) {
+      if (!phantomWallet.signTransaction) {
+        throw new Error("Wallet does not support transaction signing");
+      }
       return await phantomWallet.signTransaction(tx);
     },
     async signAllTransactions(txs: any[]) {
+      if (!phantomWallet.signAllTransactions) {
+        throw new Error("Wallet does not support signing multiple transactions");
+      }
       return await phantomWallet.signAllTransactions(txs);
     }
   };
@@ -44,7 +54,6 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
     
     try {
       if (!window.solana) {
-        console.error("Wallet not found");
         toast({
           variant: "destructive",
           title: "Wallet Not Found",
@@ -54,7 +63,6 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       }
 
       if (!window.solana.isConnected || !window.solana.publicKey) {
-        console.error("Wallet not connected");
         toast({
           variant: "destructive",
           title: "Wallet Not Connected",
@@ -74,7 +82,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       const walletPublicKey = new PublicKey(window.solana.publicKey.toString());
       console.log("Wallet public key:", walletPublicKey.toString());
 
-      // Create wallet adapter
+      // Create wallet adapter with additional error checking
       const walletAdapter = createWalletAdapter(window.solana);
 
       // Create and send fee transaction
@@ -85,6 +93,10 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
         'token_creation'
       );
       
+      if (!feeTransaction) {
+        throw new Error("Failed to create fee transaction");
+      }
+
       console.log("Sending fee transaction for signing...");
       const signature = await window.solana.signAndSendTransaction(feeTransaction);
       console.log("Fee transaction signature:", signature);
