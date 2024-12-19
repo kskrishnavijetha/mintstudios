@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Connection } from "@solana/web3.js";
 
 const WalletConnect = () => {
   const [connected, setConnected] = useState(false);
@@ -8,18 +9,37 @@ const WalletConnect = () => {
 
   const handleConnect = async () => {
     try {
-      if (!window?.solana) {
+      // Check if any Solana wallet is available
+      const { solana } = window;
+      
+      if (!solana) {
+        toast({
+          variant: "destructive",
+          title: "Wallet Not Found",
+          description: "Please install Phantom or Solflare wallet",
+        });
+        // Open Phantom wallet website in a new tab
         window.open("https://phantom.app/", "_blank");
         return;
       }
 
+      // Create connection to Solana mainnet
+      const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+
       // This will trigger the wallet selector if multiple wallets are installed
-      await window.solana.connect();
+      const resp = await solana.connect();
+      const publicKey = resp.publicKey.toString();
+      
+      // Verify connection by checking wallet balance
+      const balance = await connection.getBalance(resp.publicKey);
+      console.log("Connected to wallet:", publicKey);
+      console.log("Wallet balance:", balance / 1e9, "SOL");
+
       setConnected(true);
       
       toast({
         title: "Wallet Connected",
-        description: "Successfully connected to wallet",
+        description: `Connected to ${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`,
       });
     } catch (error) {
       console.error("Error connecting wallet:", error);
