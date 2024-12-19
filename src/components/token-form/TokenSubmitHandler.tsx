@@ -49,7 +49,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
 
       // Create and send fee transaction
       const feeTransaction = await createFeeTransaction(walletAddress, connection);
-      const { signature } = await window.solana.signAndSendTransaction(feeTransaction);
+      const signature = await window.solana.signAndSendTransaction(feeTransaction);
       await connection.confirmTransaction(signature);
 
       // Log successful fee payment
