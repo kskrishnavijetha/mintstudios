@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
@@ -10,6 +12,7 @@ const MintAuthorityRevoker = () => {
   const { publicKey, sendTransaction } = useWallet();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [tokenAddress, setTokenAddress] = useState("");
 
   const handleRevokeMint = async () => {
     if (!publicKey) {
@@ -17,6 +20,15 @@ const MintAuthorityRevoker = () => {
         variant: "destructive",
         title: "Wallet not connected",
         description: "Please connect your wallet to revoke mint authority",
+      });
+      return;
+    }
+
+    if (!tokenAddress) {
+      toast({
+        variant: "destructive",
+        title: "Missing Token Address",
+        description: "Please enter the token address",
       });
       return;
     }
@@ -60,21 +72,33 @@ const MintAuthorityRevoker = () => {
   };
 
   return (
-    <Button 
-      onClick={handleRevokeMint} 
-      disabled={isLoading} 
-      className="w-full"
-      variant="destructive"
-    >
-      {isLoading ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Revoking Mint Authority...
-        </>
-      ) : (
-        "Revoke Mint Authority (Fee: 0.03 SOL)"
-      )}
-    </Button>
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Revoke Mint Authority</h3>
+      <div>
+        <Label htmlFor="mintTokenAddress">Token Address</Label>
+        <Input
+          id="mintTokenAddress"
+          placeholder="Enter token address"
+          value={tokenAddress}
+          onChange={(e) => setTokenAddress(e.target.value)}
+        />
+      </div>
+      <Button 
+        onClick={handleRevokeMint} 
+        disabled={isLoading} 
+        className="w-full"
+        variant="destructive"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Revoking Mint Authority...
+          </>
+        ) : (
+          "Revoke Mint Authority (Fee: 0.03 SOL)"
+        )}
+      </Button>
+    </div>
   );
 };
 
