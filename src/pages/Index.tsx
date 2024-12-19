@@ -9,7 +9,11 @@ import WalletConnect from "@/components/WalletConnect";
 
 const Index = () => {
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen">
+    <div className="container mx-auto px-4 py-8 min-h-screen relative">
+      <div className="absolute top-4 right-4">
+        <WalletConnect />
+      </div>
+      
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
@@ -35,10 +39,6 @@ const Index = () => {
           <p className="text-sm text-muted-foreground mt-4">
             The cost of Token creation is 0.03 SOL, covering all fees for SPL Token Creation.
           </p>
-        </div>
-
-        <div className="flex justify-end">
-          <WalletConnect />
         </div>
 
         <Card className="glass-card p-6">
