@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { FormField } from "./token-form/FormField";
-import { FeeDisplay } from "./token-form/FeeDisplay";
-import { SubmitButton } from "./token-form/SubmitButton";
+import { TokenSubmitHandler } from "./token-form/TokenSubmitHandler";
 import { MarketIdCreator } from "./token-form/MarketIdCreator";
 import { FreezeAuthorityRevoker } from "./token-form/FreezeAuthorityRevoker";
 import { MintAuthorityRevoker } from "./token-form/MintAuthorityRevoker";
@@ -12,15 +10,11 @@ import { Textarea } from "./ui/textarea";
 import { Link, Image, Upload } from "lucide-react";
 import { Button } from "./ui/button";
 import { WalletStatus, useWalletStatus } from "./shared/WalletStatus";
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
-
-const CREATION_FEE = 0.03; // Fee in SOL
-const FEE_RECIPIENT = new PublicKey("91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi");
+import { useToast } from "@/hooks/use-toast";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
   const { walletAddress } = useWalletStatus();
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -46,63 +40,6 @@ const TokenCreationForm = () => {
         title: "Image Selected",
         description: "Image has been selected successfully",
       });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!walletAddress) {
-      toast({
-        variant: "destructive",
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet to create a token",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const connection = new Connection("https://api.mainnet-beta.solana.com");
-      const senderPubkey = new PublicKey(walletAddress);
-
-      // Create a transaction to send the creation fee
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: senderPubkey,
-          toPubkey: FEE_RECIPIENT,
-          lamports: CREATION_FEE * LAMPORTS_PER_SOL,
-        })
-      );
-
-      // Get the latest blockhash
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = senderPubkey;
-
-      // Request signature from wallet
-      const { solana } = window;
-      if (!solana?.isConnected) {
-        throw new Error("Wallet not connected");
-      }
-
-      const signature = await solana.signAndSendTransaction(transaction);
-      await connection.confirmTransaction(signature, "confirmed");
-
-      toast({
-        title: "Token Created Successfully!",
-        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
-      });
-    } catch (error) {
-      console.error("Error creating token:", error);
-      toast({
-        variant: "destructive",
-        title: "Error Creating Token",
-        description: "Failed to process the creation fee. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -267,10 +204,10 @@ const TokenCreationForm = () => {
             </div>
         </div>
 
-        <div className="space-y-4">
-          <FeeDisplay />
-          <SubmitButton isLoading={isLoading} />
-        </div>
+        <TokenSubmitHandler 
+          walletAddress={walletAddress}
+          formData={formData}
+        />
       </form>
 
       <div className="space-y-4">
