@@ -79,7 +79,11 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
 
       // Create and send fee transaction
       console.log("Creating fee transaction...");
-      const feeTransaction = await createFeeTransaction(walletPublicKey.toString(), connection);
+      const feeTransaction = await createFeeTransaction(
+        walletPublicKey.toString(),
+        connection,
+        'token_creation'
+      );
       
       console.log("Sending fee transaction for signing...");
       const signature = await window.solana.signAndSendTransaction(feeTransaction);
