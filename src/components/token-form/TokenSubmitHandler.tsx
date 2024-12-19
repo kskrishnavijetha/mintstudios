@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey, Transaction, Keypair } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -8,7 +8,9 @@ import { FeeDisplay } from "./FeeDisplay";
 
 // Initialize Buffer for browser environment
 import { Buffer } from 'buffer';
-window.Buffer = Buffer;
+if (typeof window !== 'undefined') {
+  window.Buffer = Buffer;
+}
 
 interface TokenSubmitHandlerProps {
   walletAddress: string | null;
@@ -48,16 +50,21 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
       const { solana } = window;
       
-      if (!solana?.isConnected) {
+      if (!solana?.isConnected || !solana.publicKey) {
         throw new Error("Wallet not connected");
       }
 
-      // Get the wallet's keypair
+      // Create a wallet adapter that implements the Signer interface
       const wallet = {
         publicKey: solana.publicKey,
-        signTransaction: solana.signTransaction.bind(solana),
-        signAllTransactions: solana.signAllTransactions.bind(solana),
-      };
+        secretKey: new Uint8Array(32), // Dummy secret key as we're using a connected wallet
+        signTransaction: async (transaction: Transaction) => {
+          return await solana.signTransaction(transaction);
+        },
+        signAllTransactions: async (transactions: Transaction[]) => {
+          return await solana.signAllTransactions(transactions);
+        }
+      } as Keypair;
 
       // Create the token mint
       const mint = await createMint(
