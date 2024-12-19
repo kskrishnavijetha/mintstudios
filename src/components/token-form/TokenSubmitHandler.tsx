@@ -8,8 +8,7 @@ import { FeeDisplay } from "./FeeDisplay";
 
 // Initialize Buffer globally
 if (typeof window !== 'undefined') {
-  const { Buffer } = require('buffer');
-  window.Buffer = Buffer;
+  window.Buffer = window.Buffer || require('buffer').Buffer;
 }
 
 interface TokenSubmitHandlerProps {
