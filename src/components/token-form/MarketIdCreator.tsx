@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import WalletConnect from "../WalletConnect";
 
+const FEE_COLLECTION_ADDRESS = "91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi";
+
 export const MarketIdCreator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -15,10 +17,17 @@ export const MarketIdCreator = () => {
 
   const handleCreate = async () => {
     setIsLoading(true);
-    // Simulate market ID creation
-    setTimeout(() => {
+    // Simulate market ID creation with fee collection
+    try {
+      console.log(`Collecting 0.03 SOL fee to address: ${FEE_COLLECTION_ADDRESS}`);
+      // Here you would implement the actual fee collection logic
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error collecting fee:", error);
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const handleChange = (field: string, value: string) => {

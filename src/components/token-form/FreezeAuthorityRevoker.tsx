@@ -5,16 +5,24 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import WalletConnect from "../WalletConnect";
 
+const FEE_COLLECTION_ADDRESS = "91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi";
+
 export const FreezeAuthorityRevoker = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenAddress, setTokenAddress] = useState("");
 
   const handleRevoke = async () => {
     setIsLoading(true);
-    // Simulate revocation
-    setTimeout(() => {
+    try {
+      console.log(`Collecting 0.03 SOL fee to address: ${FEE_COLLECTION_ADDRESS}`);
+      // Here you would implement the actual fee collection logic
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error collecting fee:", error);
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   return (
