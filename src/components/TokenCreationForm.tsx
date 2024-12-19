@@ -5,9 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Upload } from "lucide-react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey, LAMPORTS_PER_SOL, Transaction, SystemProgram } from "@solana/web3.js";
+
+const NETWORK = "devnet";
+const FEE_RECEIVER = "64tMohDoBgFNRsm8U4XWbjFuixVs1qPLfmgoD8gR5ijo";
+const FEE_AMOUNT = 0.03 * LAMPORTS_PER_SOL; // 0.03 SOL in lamports
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
+  const { publicKey, sendTransaction } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -30,16 +37,52 @@ const TokenCreationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!publicKey) {
+      toast({
+        variant: "destructive",
+        title: "Wallet not connected",
+        description: "Please connect your wallet to create a token",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Simulate token creation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create connection to devnet
+      const connection = new Connection(`https://api.${NETWORK}.solana.com`);
+
+      // Create transaction for fee payment
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(FEE_RECEIVER),
+          lamports: FEE_AMOUNT,
+        })
+      );
+
+      // Get the latest blockhash
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
+
+      // Send transaction
+      const signature = await sendTransaction(transaction, connection);
       
+      // Wait for confirmation
+      const confirmation = await connection.confirmTransaction(signature);
+
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed");
+      }
+
+      // If transaction is successful, proceed with token creation
       toast({
-        title: "Token Created Successfully!",
+        title: "Token Creation Initiated",
         description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
       });
+
     } catch (error) {
       toast({
         variant: "destructive",
@@ -50,6 +93,8 @@ const TokenCreationForm = () => {
       setIsLoading(false);
     }
   };
+
+  // ... keep existing code (form JSX structure)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -179,7 +224,9 @@ const TokenCreationForm = () => {
             Creating Token...
           </>
         ) : (
-          "Create Token"
+          <>
+            Create Token (Fee: 0.03 SOL)
+          </>
         )}
       </Button>
     </form>
