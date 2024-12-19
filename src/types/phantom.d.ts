@@ -5,5 +5,7 @@ interface Window {
     isPhantom?: boolean;
     isSolflare?: boolean;
     isConnected?: boolean;
+    on: (event: string, callback: () => void) => void;
+    removeAllListeners: (event: string) => void;
   };
 }
