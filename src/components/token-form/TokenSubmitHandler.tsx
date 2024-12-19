@@ -3,6 +3,7 @@ import { Connection } from "@solana/web3.js";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
+import { FeeDisplay } from "./FeeDisplay";
 
 interface TokenSubmitHandlerProps {
   walletAddress: string | null;
@@ -41,8 +42,8 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
         throw new Error("Wallet not connected");
       }
 
-      const signature = await solana.signAndSendTransaction(transaction);
-      await connection.confirmTransaction(signature.signature, "confirmed");
+      const signedTx = await solana.signAndSendTransaction(transaction);
+      await connection.confirmTransaction(signedTx, "confirmed");
 
       toast({
         title: "Token Created Successfully!",

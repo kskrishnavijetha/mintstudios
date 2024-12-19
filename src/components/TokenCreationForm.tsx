@@ -47,6 +47,11 @@ const TokenCreationForm = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Form submission is handled by TokenSubmitHandler component
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center mb-6">
