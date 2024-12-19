@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl, PublicKey, Transaction, Signer } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey, Transaction } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -7,9 +7,8 @@ import { SubmitButton } from "./SubmitButton";
 import { FeeDisplay } from "./FeeDisplay";
 
 // Initialize Buffer for browser environment
-import { Buffer } from 'buffer';
 if (typeof window !== 'undefined') {
-  window.Buffer = window.Buffer || Buffer;
+  window.Buffer = Buffer.from([]);
 }
 
 interface TokenSubmitHandlerProps {
@@ -54,24 +53,23 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
         throw new Error("Wallet not connected");
       }
 
-      // Create a wallet adapter that implements the Signer interface
-      const wallet: Signer = {
-        publicKey: new PublicKey(solana.publicKey.toString()),
-        secretKey: new Uint8Array(32), // Dummy secret key as we're using a connected wallet
-        signTransaction: async (transaction: Transaction) => {
-          return await solana.signTransaction(transaction);
-        },
-        signAllTransactions: async (transactions: Transaction[]) => {
-          return await solana.signAllTransactions(transactions);
-        }
-      };
+      const walletPublicKey = new PublicKey(solana.publicKey.toString());
 
       // Create the token mint
       const mint = await createMint(
         connection,
-        wallet,
-        wallet.publicKey,
-        wallet.publicKey,
+        {
+          publicKey: walletPublicKey,
+          secretKey: new Uint8Array(32),
+          async signTransaction(transaction: Transaction) {
+            return await solana.signTransaction(transaction);
+          },
+          async signAllTransactions(transactions: Transaction[]) {
+            return await solana.signAllTransactions(transactions);
+          }
+        },
+        walletPublicKey,
+        walletPublicKey,
         Number(formData.decimals)
       );
 
@@ -80,9 +78,18 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Get the token account
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        wallet,
+        {
+          publicKey: walletPublicKey,
+          secretKey: new Uint8Array(32),
+          async signTransaction(transaction: Transaction) {
+            return await solana.signTransaction(transaction);
+          },
+          async signAllTransactions(transactions: Transaction[]) {
+            return await solana.signAllTransactions(transactions);
+          }
+        },
         mint,
-        wallet.publicKey
+        walletPublicKey
       );
 
       console.log("Token account:", tokenAccount.address.toBase58());
@@ -90,10 +97,19 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Mint tokens to the token account
       const mintTx = await mintTo(
         connection,
-        wallet,
+        {
+          publicKey: walletPublicKey,
+          secretKey: new Uint8Array(32),
+          async signTransaction(transaction: Transaction) {
+            return await solana.signTransaction(transaction);
+          },
+          async signAllTransactions(transactions: Transaction[]) {
+            return await solana.signAllTransactions(transactions);
+          }
+        },
         mint,
         tokenAccount.address,
-        wallet.publicKey,
+        walletPublicKey,
         Number(formData.supply) * Math.pow(10, Number(formData.decimals))
       );
 
