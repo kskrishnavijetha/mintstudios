@@ -29,7 +29,7 @@ const ConnectedWallet = ({ publicKey, onDisconnect, label = "Connected" }: Conne
       <DropdownMenuContent align="end" className="w-[200px] bg-popover">
         <DropdownMenuItem 
           onClick={onDisconnect}
-          className="cursor-pointer"
+          className="cursor-pointer text-destructive"
         >
           Disconnect
         </DropdownMenuItem>

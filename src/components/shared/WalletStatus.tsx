@@ -33,17 +33,13 @@ export const WalletStatus = () => {
   const { walletAddress } = useWalletStatus();
 
   return (
-    <div className="flex flex-col space-y-2">
-      <div className="flex justify-between items-center">
+    <div className="flex items-center justify-end space-x-2">
+      {walletAddress && (
         <span className="text-sm text-muted-foreground">
-          {walletAddress ? (
-            <>Wallet: {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}</>
-          ) : (
-            'Not Connected'
-          )}
+          {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
         </span>
-        <WalletConnect />
-      </div>
+      )}
+      <WalletConnect />
     </div>
   );
 };

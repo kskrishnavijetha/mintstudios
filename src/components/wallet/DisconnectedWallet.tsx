@@ -31,11 +31,17 @@ const DisconnectedWallet = ({ connecting, onConnect, label = "Connect Wallet" }:
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => onConnect('phantom')}>
+      <DropdownMenuContent align="end" className="w-[200px] bg-popover">
+        <DropdownMenuItem 
+          onClick={() => onConnect('phantom')}
+          className="cursor-pointer"
+        >
           Connect Phantom
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onConnect('solflare')}>
+        <DropdownMenuItem 
+          onClick={() => onConnect('solflare')}
+          className="cursor-pointer"
+        >
           Connect Solflare
         </DropdownMenuItem>
       </DropdownMenuContent>

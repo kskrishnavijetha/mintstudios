@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import WalletConnect from "../WalletConnect";
 
 interface MarketIdCreatorProps {
   walletAddress: string | null;
@@ -53,7 +54,10 @@ export const MarketIdCreator = ({ walletAddress }: MarketIdCreatorProps) => {
     <div className="space-y-4 p-4 border rounded-lg">
       <div className="flex justify-between items-center">
         <h3 className="font-medium">Create Openbook Market ID</h3>
-        <span className="text-sm text-muted-foreground">Fee: 0.03 SOL</span>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-muted-foreground">Fee: 0.03 SOL</span>
+          <WalletConnect />
+        </div>
       </div>
 
       <div className="grid gap-2">
