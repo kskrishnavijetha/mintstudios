@@ -11,26 +11,44 @@ const WalletConnect = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if wallet is already connected on component mount
     const checkWalletConnection = async () => {
-      const { solana } = window;
-      if (solana?.isPhantom && solana.isConnected) {
-        try {
-          // Try to reconnect without prompting user
+      try {
+        const { solana } = window;
+        if (solana?.isPhantom && solana.isConnected) {
           const response = await solana.connect({ onlyIfTrusted: true });
           setConnected(true);
           setPublicKey(response.publicKey.toString());
-        } catch (error) {
-          console.error("Auto-connect error:", error);
-          // Reset connection state if auto-connect fails
-          setConnected(false);
-          setPublicKey(null);
         }
+      } catch (error) {
+        console.error("Auto-connect error:", error);
+        setConnected(false);
+        setPublicKey(null);
       }
     };
 
+    // Check connection status when component mounts
     checkWalletConnection();
-  }, []);
+
+    // Listen for wallet connection changes
+    window.solana?.on('connect', () => {
+      checkWalletConnection();
+    });
+
+    window.solana?.on('disconnect', () => {
+      setConnected(false);
+      setPublicKey(null);
+      toast({
+        title: "Wallet Disconnected",
+        description: "Your wallet has been disconnected",
+      });
+    });
+
+    // Cleanup listeners
+    return () => {
+      window.solana?.removeAllListeners('connect');
+      window.solana?.removeAllListeners('disconnect');
+    };
+  }, [toast]);
 
   const handleConnect = async () => {
     try {
@@ -47,18 +65,18 @@ const WalletConnect = () => {
         return;
       }
 
-      // Create connection to Solana mainnet
       const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
-
-      // Connect to wallet without any options for first-time connections
       const resp = await solana.connect();
       const walletPubKey = new PublicKey(resp.publicKey.toString());
       const walletAddress = walletPubKey.toString();
       
-      // Verify connection by checking wallet balance
-      const balance = await connection.getBalance(walletPubKey);
-      console.log("Connected to wallet:", walletAddress);
-      console.log("Wallet balance:", balance / 1e9, "SOL");
+      try {
+        const balance = await connection.getBalance(walletPubKey);
+        console.log("Connected to wallet:", walletAddress);
+        console.log("Wallet balance:", balance / 1e9, "SOL");
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
 
       setConnected(true);
       setPublicKey(walletAddress);
