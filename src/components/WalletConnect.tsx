@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 const WalletConnect = () => {
   const [connected, setConnected] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,6 +33,7 @@ const WalletConnect = () => {
 
   const connectWallet = async () => {
     try {
+      setIsConnecting(true);
       if (typeof window === "undefined") return;
 
       let wallet = window.solana;
@@ -67,6 +69,8 @@ const WalletConnect = () => {
         title: "Connection failed",
         description: "Failed to connect wallet",
       });
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -96,9 +100,15 @@ const WalletConnect = () => {
       variant="outline"
       className="gap-2"
       onClick={connected ? disconnectWallet : connectWallet}
+      disabled={isConnecting}
     >
-      <Wallet className="h-4 w-4" />
-      {connected ? `${address?.slice(0, 4)}...${address?.slice(-4)}` : "Connect Wallet"}
+      <Wallet className={`h-4 w-4 ${isConnecting ? 'animate-spin' : ''}`} />
+      {isConnecting 
+        ? "Connecting..." 
+        : connected 
+          ? `${address?.slice(0, 4)}...${address?.slice(-4)}`
+          : "Connect Wallet"
+      }
     </Button>
   );
 };
