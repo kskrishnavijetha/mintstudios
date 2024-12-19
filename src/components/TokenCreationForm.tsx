@@ -12,6 +12,10 @@ import { Textarea } from "./ui/textarea";
 import { Link, Image, Upload } from "lucide-react";
 import { Button } from "./ui/button";
 import { WalletStatus, useWalletStatus } from "./shared/WalletStatus";
+import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
+
+const CREATION_FEE = 0.03; // Fee in SOL
+const FEE_RECIPIENT = new PublicKey("91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi");
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -59,14 +63,42 @@ const TokenCreationForm = () => {
 
     setIsLoading(true);
 
-    // Simulate token creation
-    setTimeout(() => {
+    try {
+      const connection = new Connection("https://api.mainnet-beta.solana.com");
+      const senderPubkey = new PublicKey(walletAddress);
+
+      // Create a transaction to send the creation fee
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: senderPubkey,
+          toPubkey: FEE_RECIPIENT,
+          lamports: CREATION_FEE * LAMPORTS_PER_SOL,
+        })
+      );
+
+      // Request signature from wallet
+      const { solana } = window;
+      if (!solana?.isConnected) {
+        throw new Error("Wallet not connected");
+      }
+
+      const signature = await solana.signAndSendTransaction(transaction);
+      await connection.confirmTransaction(signature, "confirmed");
+
       toast({
         title: "Token Created Successfully!",
         description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
       });
+    } catch (error) {
+      console.error("Error creating token:", error);
+      toast({
+        variant: "destructive",
+        title: "Error Creating Token",
+        description: "Failed to process the creation fee. Please try again.",
+      });
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const handleFieldChange = (field: string, value: string) => {
