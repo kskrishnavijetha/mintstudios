@@ -6,6 +6,10 @@ import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
 import { FeeDisplay } from "./FeeDisplay";
 
+// Initialize Buffer for browser environment
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
+
 interface TokenSubmitHandlerProps {
   walletAddress: string | null;
   formData: {
@@ -48,12 +52,19 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
         throw new Error("Wallet not connected");
       }
 
+      // Get the wallet's keypair
+      const wallet = {
+        publicKey: solana.publicKey,
+        signTransaction: solana.signTransaction.bind(solana),
+        signAllTransactions: solana.signAllTransactions.bind(solana),
+      };
+
       // Create the token mint
       const mint = await createMint(
         connection,
-        solana.publicKey,
-        solana.publicKey,
-        solana.publicKey,
+        wallet,
+        wallet.publicKey,
+        wallet.publicKey,
         Number(formData.decimals)
       );
 
@@ -62,9 +73,9 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Get the token account
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        solana.publicKey,
+        wallet,
         mint,
-        solana.publicKey
+        wallet.publicKey
       );
 
       console.log("Token account:", tokenAccount.address.toBase58());
@@ -72,10 +83,10 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Mint tokens to the token account
       const mintTx = await mintTo(
         connection,
-        solana.publicKey,
+        wallet,
         mint,
         tokenAccount.address,
-        solana.publicKey,
+        wallet.publicKey,
         Number(formData.supply) * Math.pow(10, Number(formData.decimals))
       );
 
