@@ -7,7 +7,6 @@ import { BasicInformation } from "./token-form/BasicInformation";
 import { TokenDetails } from "./token-form/TokenDetails";
 import { SocialLinks } from "./token-form/SocialLinks";
 import { useToast } from "@/hooks/use-toast";
-import WalletConnect from "./WalletConnect";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -50,62 +49,36 @@ const TokenCreationForm = () => {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Create Token Column */}
-        <div className="space-y-6 p-6 border rounded-lg">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Create Token</h3>
-            <WalletConnect />
-          </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <BasicInformation 
-              formData={formData} 
-              onFieldChange={handleFieldChange} 
-            />
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold">Create Token</h3>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <BasicInformation 
+          formData={formData} 
+          onFieldChange={handleFieldChange} 
+        />
 
-            <TokenDetails 
-              formData={formData}
-              onFieldChange={handleFieldChange}
-              onImageUpload={handleImageUpload}
-              selectedImage={selectedImage}
-            />
+        <TokenDetails 
+          formData={formData}
+          onFieldChange={handleFieldChange}
+          onImageUpload={handleImageUpload}
+          selectedImage={selectedImage}
+        />
 
-            <SocialLinks 
-              formData={formData}
-              onFieldChange={handleFieldChange}
-            />
+        <SocialLinks 
+          formData={formData}
+          onFieldChange={handleFieldChange}
+        />
 
-            <TokenSubmitHandler formData={formData} />
-          </form>
-        </div>
+        <TokenSubmitHandler formData={formData} />
+      </form>
 
-        {/* Market ID Column */}
-        <div className="space-y-6 p-6 border rounded-lg">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Create Market</h3>
-            <WalletConnect />
-          </div>
-          <MarketIdCreator />
-        </div>
-
-        {/* Freeze Authority Column */}
-        <div className="space-y-6 p-6 border rounded-lg">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Freeze Authority</h3>
-            <WalletConnect />
-          </div>
-          <FreezeAuthorityRevoker />
-        </div>
-
-        {/* Mint Authority Column */}
-        <div className="space-y-6 p-6 border rounded-lg">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Mint Authority</h3>
-            <WalletConnect />
-          </div>
-          <MintAuthorityRevoker />
-        </div>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Additional Actions</h2>
+        <MarketIdCreator />
+        <FreezeAuthorityRevoker />
+        <MintAuthorityRevoker />
       </div>
     </div>
   );
