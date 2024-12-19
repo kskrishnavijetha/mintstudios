@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, LAMPORTS_PER_SOL, Transaction, SystemProgram } from "@solana/web3.js";
-
-const NETWORK = "devnet";
-const FEE_RECEIVER = "64tMohDoBgFNRsm8U4XWbjFuixVs1qPLfmgoD8gR5ijo";
-const FEE_AMOUNT = 0.03 * LAMPORTS_PER_SOL; // 0.03 SOL in lamports
+import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import TokenFormFields from "./token/TokenFormFields";
+import SocialLinks from "./token/SocialLinks";
+import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -50,10 +49,7 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      // Create connection to devnet
       const connection = new Connection(`https://api.${NETWORK}.solana.com`);
-
-      // Create transaction for fee payment
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -62,22 +58,17 @@ const TokenCreationForm = () => {
         })
       );
 
-      // Get the latest blockhash
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
 
-      // Send transaction
       const signature = await sendTransaction(transaction, connection);
-      
-      // Wait for confirmation
       const confirmation = await connection.confirmTransaction(signature);
 
       if (confirmation.value.err) {
         throw new Error("Transaction failed");
       }
 
-      // If transaction is successful, proceed with token creation
       toast({
         title: "Token Creation Initiated",
         description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
@@ -94,128 +85,46 @@ const TokenCreationForm = () => {
     }
   };
 
-  // ... keep existing code (form JSX structure)
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="grid gap-2">
-          <Label htmlFor="name">Token Name</Label>
-          <Input
-            id="name"
-            placeholder="My Token"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-        </div>
+      <TokenFormFields
+        formData={formData}
+        setFormData={setFormData}
+        handleSupplyChange={(value) => setFormData({ ...formData, supply: value })}
+      />
 
-        <div className="grid gap-2">
-          <Label htmlFor="symbol">Token Symbol</Label>
+      <div className="grid gap-2">
+        <Label htmlFor="image">Token Image</Label>
+        <div className="flex items-center gap-4">
           <Input
-            id="symbol"
-            placeholder="MTK"
-            value={formData.symbol}
-            onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
-            required
+            id="image"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="cursor-pointer"
           />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="supply">Total Supply</Label>
-          <Input
-            id="supply"
-            type="number"
-            placeholder="1000000"
-            value={formData.supply}
-            onChange={(e) => setFormData({ ...formData, supply: e.target.value })}
-            required
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="decimals">Decimals</Label>
-          <Input
-            id="decimals"
-            type="number"
-            value={formData.decimals}
-            onChange={(e) => setFormData({ ...formData, decimals: e.target.value })}
-            required
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="image">Token Image</Label>
-          <div className="flex items-center gap-4">
-            <Input
-              id="image"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="cursor-pointer"
+          {formData.image && (
+            <img
+              src={URL.createObjectURL(formData.image)}
+              alt="Token preview"
+              className="h-12 w-12 rounded-full object-cover"
             />
-            {formData.image && (
-              <img
-                src={URL.createObjectURL(formData.image)}
-                alt="Token preview"
-                className="h-12 w-12 rounded-full object-cover"
-              />
-            )}
-          </div>
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            placeholder="Enter token description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="min-h-[100px]"
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="website">Website</Label>
-          <Input
-            id="website"
-            type="url"
-            placeholder="https://yourwebsite.com"
-            value={formData.website}
-            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="twitter">Twitter</Label>
-          <Input
-            id="twitter"
-            placeholder="@yourtwitter"
-            value={formData.twitter}
-            onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="telegram">Telegram</Label>
-          <Input
-            id="telegram"
-            placeholder="t.me/yourtelegram"
-            value={formData.telegram}
-            onChange={(e) => setFormData({ ...formData, telegram: e.target.value })}
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="discord">Discord</Label>
-          <Input
-            id="discord"
-            placeholder="discord.gg/yourdiscord"
-            value={formData.discord}
-            onChange={(e) => setFormData({ ...formData, discord: e.target.value })}
-          />
+          )}
         </div>
       </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          placeholder="Enter token description"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className="min-h-[100px]"
+        />
+      </div>
+
+      <SocialLinks formData={formData} setFormData={setFormData} />
 
       <Button className="w-full" type="submit" disabled={isLoading}>
         {isLoading ? (
