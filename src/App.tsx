@@ -10,7 +10,8 @@ import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl } from '@solana/web3.js';
 import { useMemo } from 'react';
 
-require('@solana/wallet-adapter-react-ui/styles.css');
+// Import the styles directly
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 const queryClient = new QueryClient();
 
