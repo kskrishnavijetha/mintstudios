@@ -16,11 +16,15 @@ const WalletConnect = () => {
       const { solana } = window;
       if (solana?.isPhantom && solana.isConnected) {
         try {
+          // Try to reconnect without prompting user
           const response = await solana.connect({ onlyIfTrusted: true });
           setConnected(true);
           setPublicKey(response.publicKey.toString());
         } catch (error) {
           console.error("Auto-connect error:", error);
+          // Reset connection state if auto-connect fails
+          setConnected(false);
+          setPublicKey(null);
         }
       }
     };
@@ -46,7 +50,7 @@ const WalletConnect = () => {
       // Create connection to Solana mainnet
       const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
-      // Connect to wallet
+      // Connect to wallet without any options for first-time connections
       const resp = await solana.connect();
       const walletPubKey = new PublicKey(resp.publicKey.toString());
       const walletAddress = walletPubKey.toString();
