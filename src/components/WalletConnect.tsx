@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const WalletConnect = () => {
   const [connected, setConnected] = useState(false);
@@ -23,6 +23,9 @@ const WalletConnect = () => {
     window.solana?.on("connect", handleWalletChange);
     window.solana?.on("disconnect", handleWalletChange);
     window.solana?.on("accountChanged", handleWalletChange);
+
+    // Check initial connection state
+    handleWalletChange();
 
     return () => {
       window.solana?.removeAllListeners("connect");
@@ -48,7 +51,6 @@ const WalletConnect = () => {
           title: "Wallet not found",
           description: "Please install Phantom or Solflare wallet",
         });
-        // Open wallet store pages in new tabs
         window.open("https://phantom.app/", "_blank");
         window.open("https://solflare.com/", "_blank");
         return;
@@ -64,10 +66,11 @@ const WalletConnect = () => {
         description: `Connected to ${address.slice(0, 4)}...${address.slice(-4)}`,
       });
     } catch (error) {
+      console.error("Connection error:", error);
       toast({
         variant: "destructive",
         title: "Connection failed",
-        description: "Failed to connect wallet",
+        description: error instanceof Error ? error.message : "Failed to connect wallet",
       });
     } finally {
       setIsConnecting(false);
@@ -87,10 +90,11 @@ const WalletConnect = () => {
         });
       }
     } catch (error) {
+      console.error("Disconnect error:", error);
       toast({
         variant: "destructive",
         title: "Disconnect failed",
-        description: "Failed to disconnect wallet",
+        description: error instanceof Error ? error.message : "Failed to disconnect wallet",
       });
     }
   };

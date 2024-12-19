@@ -45,7 +45,6 @@ const TokenCreationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Form submission is handled by TokenSubmitHandler component
   };
 
   return (

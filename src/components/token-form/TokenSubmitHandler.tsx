@@ -21,7 +21,6 @@ interface TokenSubmitHandlerProps {
   };
 }
 
-// Create a wallet adapter that implements the Signer interface
 const createWalletAdapter = (phantomWallet: any) => {
   if (!phantomWallet || !phantomWallet.publicKey) {
     throw new Error("Wallet not connected");
@@ -29,7 +28,7 @@ const createWalletAdapter = (phantomWallet: any) => {
 
   return {
     publicKey: new PublicKey(phantomWallet.publicKey.toString()),
-    secretKey: new Uint8Array(32), // Dummy secret key, not used with Phantom
+    secretKey: new Uint8Array(32),
     async signTransaction(tx: any) {
       if (!phantomWallet.signTransaction) {
         throw new Error("Wallet does not support transaction signing");
@@ -74,18 +73,14 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       setIsLoading(true);
       console.log("Starting token creation process...");
 
-      // Create connection to devnet
       const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
       console.log("Connected to Solana devnet");
 
-      // Get wallet public key and convert it to PublicKey object
       const walletPublicKey = new PublicKey(window.solana.publicKey.toString());
       console.log("Wallet public key:", walletPublicKey.toString());
 
-      // Create wallet adapter with additional error checking
       const walletAdapter = createWalletAdapter(window.solana);
 
-      // Create and send fee transaction
       console.log("Creating fee transaction...");
       const feeTransaction = await createFeeTransaction(
         walletPublicKey.toString(),
@@ -105,7 +100,6 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       await connection.confirmTransaction(signature);
       console.log("Fee transaction confirmed");
 
-      // Create the token mint
       console.log("Creating token mint...");
       const mint = await createMint(
         connection,
@@ -116,7 +110,6 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       );
       console.log("Token mint created:", mint.toString());
 
-      // Create associated token account
       console.log("Creating associated token account...");
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
@@ -126,7 +119,6 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       );
       console.log("Token account created:", tokenAccount.address.toString());
 
-      // Mint tokens
       console.log("Minting tokens...");
       const mintAmount = BigInt(Number(formData.supply) * Math.pow(10, Number(formData.decimals)));
       await mintTo(
