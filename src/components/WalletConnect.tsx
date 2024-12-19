@@ -18,10 +18,17 @@ const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
     const checkWalletConnection = async () => {
       try {
         const { solana } = window;
-        if ((solana?.isPhantom || solana?.isSolflare) && solana.isConnected) {
-          const response = await solana.connect({ onlyIfTrusted: true });
-          setConnected(true);
-          setPublicKey(response.publicKey.toString());
+        if (solana?.isPhantom || solana?.isSolflare) {
+          console.log("Wallet detected:", solana.isPhantom ? "Phantom" : "Solflare");
+          if (solana.isConnected) {
+            console.log("Wallet is connected");
+            const response = await solana.connect({ onlyIfTrusted: true });
+            setConnected(true);
+            setPublicKey(response.publicKey.toString());
+            console.log("Connected to wallet:", response.publicKey.toString());
+          }
+        } else {
+          console.log("No compatible wallet detected");
         }
       } catch (error) {
         console.error("Auto-connect error:", error);
@@ -33,10 +40,12 @@ const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
     checkWalletConnection();
 
     window.solana?.on('connect', () => {
+      console.log("Wallet connect event triggered");
       checkWalletConnection();
     });
 
     window.solana?.on('disconnect', () => {
+      console.log("Wallet disconnect event triggered");
       setConnected(false);
       setPublicKey(null);
       toast({
@@ -54,9 +63,11 @@ const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
   const handleConnect = async (walletType: 'phantom' | 'solflare') => {
     try {
       setConnecting(true);
+      console.log(`Attempting to connect ${walletType} wallet`);
       const { solana } = window;
       
       if (walletType === 'phantom' && !solana?.isPhantom) {
+        console.log("Phantom wallet not found");
         toast({
           variant: "destructive",
           title: "Phantom Wallet Not Found",
@@ -67,6 +78,7 @@ const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
       }
 
       if (walletType === 'solflare' && !solana?.isSolflare) {
+        console.log("Solflare wallet not found");
         toast({
           variant: "destructive",
           title: "Solflare Wallet Not Found",
@@ -76,8 +88,8 @@ const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
         return;
       }
 
-      // Changed to mainnet-beta
       const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+      console.log("Requesting wallet connection");
       const resp = await solana.connect();
       const walletPubKey = new PublicKey(resp.publicKey.toString());
       const walletAddress = walletPubKey.toString();
@@ -111,6 +123,7 @@ const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
 
   const handleDisconnect = async () => {
     try {
+      console.log("Attempting to disconnect wallet");
       const { solana } = window;
       if (solana) {
         await solana.disconnect();
