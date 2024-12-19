@@ -20,6 +20,23 @@ const Index = () => {
           </p>
         </div>
 
+        <div className="glass-card p-6 space-y-6">
+          <h2 className="text-xl font-semibold">How to Create Your Token</h2>
+          <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+            <li>Connect your Solana wallet</li>
+            <li>Specify the desired name for your Token</li>
+            <li>Indicate the symbol (max 8 characters)</li>
+            <li>Select the decimals quantity (default recommended 6 for all tokens)</li>
+            <li>Provide a brief description for your SPL Token</li>
+            <li>Upload the image for your token (PNG)</li>
+            <li>Determine the Supply of your Token</li>
+            <li>Click on create, accept the transaction and wait until your tokens ready</li>
+          </ol>
+          <p className="text-sm text-muted-foreground mt-4">
+            The cost of Token creation is 0.03 SOL, covering all fees for SPL Token Creation.
+          </p>
+        </div>
+
         <div className="flex justify-end">
           <WalletConnect />
         </div>
