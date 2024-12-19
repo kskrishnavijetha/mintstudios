@@ -24,7 +24,7 @@ interface TokenSubmitHandlerProps {
 // Create a wallet adapter that implements the Signer interface
 const createWalletAdapter = (phantomWallet: any) => {
   return {
-    publicKey: phantomWallet.publicKey,
+    publicKey: new PublicKey(phantomWallet.publicKey.toString()),
     secretKey: new Uint8Array(32), // Dummy secret key, not used with Phantom
     async signTransaction(tx: any) {
       return await phantomWallet.signTransaction(tx);
@@ -53,7 +53,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
         return;
       }
 
-      if (!window.solana.isConnected) {
+      if (!window.solana.isConnected || !window.solana.publicKey) {
         console.error("Wallet not connected");
         toast({
           variant: "destructive",
