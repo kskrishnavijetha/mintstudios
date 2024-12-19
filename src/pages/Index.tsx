@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import TokenCreationForm from "@/components/TokenCreationForm";
 import WalletConnect from "@/components/WalletConnect";
-import Logo from "@/components/Logo";
 
 const Index = () => {
   return (
@@ -17,7 +16,6 @@ const Index = () => {
       
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <Logo />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
             Solana Token Creator
           </h1>
