@@ -8,7 +8,9 @@ import { FeeDisplay } from "./FeeDisplay";
 
 // Initialize Buffer globally
 import { Buffer } from 'buffer';
-globalThis.Buffer = Buffer;
+if (typeof window !== 'undefined') {
+  window.Buffer = Buffer;
+}
 
 interface TokenSubmitHandlerProps {
   walletAddress: string | null;
