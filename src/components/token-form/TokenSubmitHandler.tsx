@@ -8,10 +8,7 @@ import { FeeDisplay } from "./FeeDisplay";
 
 // Initialize Buffer for browser environment
 if (typeof window !== 'undefined') {
-  const buffer = require('buffer');
-  if (!window.Buffer) {
-    window.Buffer = buffer.Buffer;
-  }
+  window.Buffer = window.Buffer || require('buffer').Buffer;
 }
 
 interface TokenSubmitHandlerProps {
