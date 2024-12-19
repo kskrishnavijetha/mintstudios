@@ -70,11 +70,8 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
       console.log("Connected to Solana devnet");
 
-      // Get wallet public key
-      const walletPublicKey = window.solana.publicKey;
-      if (!walletPublicKey) {
-        throw new Error("Wallet public key not found");
-      }
+      // Get wallet public key and convert it to PublicKey object
+      const walletPublicKey = new PublicKey(window.solana.publicKey.toString());
       console.log("Wallet public key:", walletPublicKey.toString());
 
       // Create wallet adapter
