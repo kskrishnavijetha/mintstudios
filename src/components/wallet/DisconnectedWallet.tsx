@@ -10,9 +10,10 @@ import {
 interface DisconnectedWalletProps {
   connecting: boolean;
   onConnect: (walletType: 'phantom' | 'solflare') => void;
+  label?: string;
 }
 
-const DisconnectedWallet = ({ connecting, onConnect }: DisconnectedWalletProps) => {
+const DisconnectedWallet = ({ connecting, onConnect, label = "Connect Wallet" }: DisconnectedWalletProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,7 +27,7 @@ const DisconnectedWallet = ({ connecting, onConnect }: DisconnectedWalletProps) 
               Connecting...
             </>
           ) : (
-            "Connect Wallet"
+            label
           )}
         </Button>
       </DropdownMenuTrigger>

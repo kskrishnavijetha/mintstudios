@@ -4,7 +4,11 @@ import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import ConnectedWallet from "./wallet/ConnectedWallet";
 import DisconnectedWallet from "./wallet/DisconnectedWallet";
 
-const WalletConnect = () => {
+interface WalletConnectProps {
+  label?: string;
+}
+
+const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [publicKey, setPublicKey] = useState<string | null>(null);
@@ -132,6 +136,7 @@ const WalletConnect = () => {
       <ConnectedWallet
         publicKey={publicKey}
         onDisconnect={handleDisconnect}
+        label={label}
       />
     );
   }
@@ -140,6 +145,7 @@ const WalletConnect = () => {
     <DisconnectedWallet
       connecting={connecting}
       onConnect={handleConnect}
+      label={label}
     />
   );
 };
