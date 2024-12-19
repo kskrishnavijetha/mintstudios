@@ -9,7 +9,7 @@ export const useWalletStatus = () => {
   useEffect(() => {
     const checkWalletStatus = () => {
       const { solana } = window;
-      if (solana?.isConnected && solana.publicKey) {
+      if (solana?.isConnected && solana?.publicKey) {
         setWalletAddress(solana.publicKey.toString());
       } else {
         setWalletAddress(null);
