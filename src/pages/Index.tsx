@@ -27,39 +27,6 @@ const Index = () => {
         </div>
 
         <div className="glass-card p-6 space-y-6">
-          <h2 className="text-2xl font-semibold">About Solana Token Creator</h2>
-          <div className="space-y-4 text-muted-foreground">
-            <p>
-              Solana Token Creator is a tool designed to simplify the process of creating SPL (Solana Program Library) tokens on the Solana blockchain. SPL tokens are the Solana equivalent of ERC-20 tokens on Ethereum, serving as a standard for fungible and non-fungible assets within the Solana ecosystem.
-            </p>
-            
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">Key Features</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>User-friendly interface</li>
-                  <li>Customizable token attributes</li>
-                  <li>Wallet integration</li>
-                  <li>Decentralized and secure</li>
-                  <li>No coding required</li>
-                </ul>
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">Token Properties</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Custom name and symbol</li>
-                  <li>Configurable supply</li>
-                  <li>Adjustable decimals</li>
-                  <li>Metadata support</li>
-                  <li>Minting capabilities</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card p-6 space-y-6">
           <h2 className="text-2xl font-semibold">How to Use Solana Token Creator</h2>
           <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
             <li>Connect your Solana wallet</li>
