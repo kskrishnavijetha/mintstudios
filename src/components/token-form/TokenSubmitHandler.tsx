@@ -94,7 +94,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
 
       console.log("Sending fee transaction for signing...");
       const signedTx = await window.solana.signAndSendTransaction(feeTransaction);
-      console.log("Fee transaction signature:", signedTx);
+      console.log("Fee transaction sent:", signedTx);
 
       console.log("Waiting for fee transaction confirmation...");
       await connection.confirmTransaction(signedTx);
