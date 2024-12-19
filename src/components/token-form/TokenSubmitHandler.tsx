@@ -8,7 +8,8 @@ import { FeeDisplay } from "./FeeDisplay";
 
 // Initialize Buffer for browser environment
 if (typeof window !== 'undefined') {
-  window.Buffer = window.Buffer || require('buffer').Buffer;
+  const { Buffer } = require('buffer');
+  window.Buffer = Buffer;
 }
 
 interface TokenSubmitHandlerProps {
@@ -46,7 +47,6 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
     setIsLoading(true);
 
     try {
-      // Changed to mainnet-beta
       const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
       const { solana } = window;
       

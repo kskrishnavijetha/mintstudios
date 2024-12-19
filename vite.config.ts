@@ -15,7 +15,7 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    global: {},
+    global: 'globalThis',
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -28,5 +28,8 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      external: ['buffer'],
+    }
   }
 });
