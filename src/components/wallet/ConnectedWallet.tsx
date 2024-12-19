@@ -32,7 +32,7 @@ const ConnectedWallet = ({ publicKey, onDisconnect, label = "Connected" }: Conne
       <DropdownMenuTrigger asChild>
         <Button
           variant="secondary"
-          className="relative min-w-[140px] justify-center"
+          className="relative min-w-[140px] justify-center bg-accent hover:bg-accent/80"
         >
           <span className="absolute top-1/2 -translate-y-1/2 left-2 w-2 h-2 rounded-full bg-green-500" />
           <span className="ml-4">
@@ -40,26 +40,26 @@ const ConnectedWallet = ({ publicKey, onDisconnect, label = "Connected" }: Conne
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[200px] bg-popover">
+      <DropdownMenuContent align="end" className="w-[200px] bg-background border border-border">
         <DropdownMenuItem 
           onClick={handleCopyAddress}
-          className="cursor-pointer flex items-center"
+          className="cursor-pointer flex items-center px-4 py-2.5 hover:bg-accent focus:bg-accent"
         >
-          <Copy className="mr-2 h-4 w-4" />
+          <Copy className="mr-3 h-4 w-4" />
           Copy Address
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => window.open("https://phantom.app/", "_blank")}
-          className="cursor-pointer flex items-center"
+          className="cursor-pointer flex items-center px-4 py-2.5 hover:bg-accent focus:bg-accent"
         >
-          <User className="mr-2 h-4 w-4" />
+          <User className="mr-3 h-4 w-4" />
           Change Wallet
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={onDisconnect}
-          className="cursor-pointer text-destructive flex items-center"
+          className="cursor-pointer flex items-center px-4 py-2.5 hover:bg-accent focus:bg-accent text-red-500"
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-3 h-4 w-4" />
           Disconnect
         </DropdownMenuItem>
       </DropdownMenuContent>
