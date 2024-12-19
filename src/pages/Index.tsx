@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import TokenCreationForm from "@/components/TokenCreationForm";
-import WalletConnect from "@/components/WalletConnect";
 
 const Index = () => {
   return (
@@ -18,10 +17,6 @@ const Index = () => {
           <p className="text-muted-foreground">
             Create your own SPL token on Solana blockchain
           </p>
-        </div>
-
-        <div className="flex justify-end">
-          <WalletConnect />
         </div>
 
         <Card className="glass-card p-6">
