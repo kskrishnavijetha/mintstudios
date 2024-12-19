@@ -6,8 +6,6 @@ import { SubmitButton } from "./token-form/SubmitButton";
 import { MarketIdCreator } from "./token-form/MarketIdCreator";
 import { FreezeAuthorityRevoker } from "./token-form/FreezeAuthorityRevoker";
 import { MintAuthorityRevoker } from "./token-form/MintAuthorityRevoker";
-import { TokenCreationHeader } from "./token-form/TokenCreationHeader";
-import { TokenFeeSection } from "./token-form/TokenFeeSection";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
@@ -31,15 +29,6 @@ const TokenCreationForm = () => {
     discord: "",
   });
 
-  // Get the current wallet address from window.solana
-  const getCurrentWalletAddress = (): string | null => {
-    const { solana } = window;
-    if (solana?.isConnected && solana.publicKey) {
-      return solana.publicKey.toString();
-    }
-    return null;
-  };
-
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -56,17 +45,6 @@ const TokenCreationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const walletAddress = getCurrentWalletAddress();
-    if (!walletAddress) {
-      toast({
-        variant: "destructive",
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet to create a token",
-      });
-      return;
-    }
-
     setIsLoading(true);
 
     // Simulate token creation
@@ -85,8 +63,9 @@ const TokenCreationForm = () => {
 
   return (
     <div className="space-y-8">
-      <TokenCreationHeader />
-      <TokenFeeSection walletAddress={getCurrentWalletAddress()} />
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold">Create Token</h3>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Token Information */}
