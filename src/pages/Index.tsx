@@ -28,6 +28,21 @@ const Index = () => {
           </p>
         </div>
 
+        <div className="glass-card p-6 space-y-6">
+          <h2 className="text-xl font-semibold">How to Use Solana Token Creator</h2>
+          <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+            <li>Connect your Solana wallet</li>
+            <li>Specify the desired name for your Token</li>
+            <li>Indicate the symbol (max 8 characters)</li>
+            <li>Determine the Supply of your Token</li>
+            <li>Select the decimals quantity (default recommended 9 for all tokens)</li>
+            <li>Upload the image for your token</li>
+            <li>Provide a brief description for your SPL Token</li>
+            <li>Add Website, Twitter, Telegram, Discord</li>
+            <li>Click on create, accept the transaction and wait until your tokens are ready</li>
+          </ol>
+        </div>
+
         <Card className="glass-card p-6">
           <TokenCreationForm />
         </Card>
