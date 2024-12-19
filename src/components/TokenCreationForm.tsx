@@ -3,7 +3,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Upload } from "lucide-react";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -13,7 +14,19 @@ const TokenCreationForm = () => {
     symbol: "",
     supply: "",
     decimals: "9",
+    description: "",
+    website: "",
+    twitter: "",
+    telegram: "",
+    discord: "",
+    image: null as File | null,
   });
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData({ ...formData, image: e.target.files[0] });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +96,78 @@ const TokenCreationForm = () => {
             value={formData.decimals}
             onChange={(e) => setFormData({ ...formData, decimals: e.target.value })}
             required
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="image">Token Image</Label>
+          <div className="flex items-center gap-4">
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="cursor-pointer"
+            />
+            {formData.image && (
+              <img
+                src={URL.createObjectURL(formData.image)}
+                alt="Token preview"
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            placeholder="Enter token description"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            className="min-h-[100px]"
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="website">Website</Label>
+          <Input
+            id="website"
+            type="url"
+            placeholder="https://yourwebsite.com"
+            value={formData.website}
+            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="twitter">Twitter</Label>
+          <Input
+            id="twitter"
+            placeholder="@yourtwitter"
+            value={formData.twitter}
+            onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="telegram">Telegram</Label>
+          <Input
+            id="telegram"
+            placeholder="t.me/yourtelegram"
+            value={formData.telegram}
+            onChange={(e) => setFormData({ ...formData, telegram: e.target.value })}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="discord">Discord</Label>
+          <Input
+            id="discord"
+            placeholder="discord.gg/yourdiscord"
+            value={formData.discord}
+            onChange={(e) => setFormData({ ...formData, discord: e.target.value })}
           />
         </div>
       </div>
