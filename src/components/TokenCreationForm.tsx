@@ -11,7 +11,6 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Link, Image, Upload } from "lucide-react";
 import { Button } from "./ui/button";
-import WalletConnect from "@/components/WalletConnect";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -65,10 +64,6 @@ const TokenCreationForm = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-end">
-        <WalletConnect label="Connect to Create Token" />
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           {/* Basic Token Information */}
@@ -229,19 +224,8 @@ const TokenCreationForm = () => {
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Additional Actions</h2>
-        <div className="flex justify-end mb-2">
-          <WalletConnect label="Connect for Market ID" />
-        </div>
         <MarketIdCreator />
-        
-        <div className="flex justify-end mb-2">
-          <WalletConnect label="Connect for Freeze Authority" />
-        </div>
         <FreezeAuthorityRevoker />
-        
-        <div className="flex justify-end mb-2">
-          <WalletConnect label="Connect for Mint Authority" />
-        </div>
         <MintAuthorityRevoker />
       </div>
     </div>
