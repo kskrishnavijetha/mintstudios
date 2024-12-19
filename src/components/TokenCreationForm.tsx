@@ -3,6 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { FormField } from "./token-form/FormField";
 import { FeeDisplay } from "./token-form/FeeDisplay";
 import { SubmitButton } from "./token-form/SubmitButton";
+import { MarketConfig } from "./token-form/MarketConfig";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -12,6 +13,8 @@ const TokenCreationForm = () => {
     symbol: "",
     supply: "",
     decimals: "9",
+    minOrderSize: 0,
+    tickSize: 4,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,7 +22,6 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     // Simulate token creation - in reality, you'd connect to Solana here
-    // and send fees to 91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi
     setTimeout(() => {
       toast({
         title: "Token Created Successfully!",
@@ -31,6 +33,14 @@ const TokenCreationForm = () => {
 
   const handleFieldChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleMarketConfigChange = (minOrderSize: number, tickSize: number) => {
+    setFormData(prev => ({
+      ...prev,
+      minOrderSize,
+      tickSize,
+    }));
   };
 
   return (
@@ -71,6 +81,11 @@ const TokenCreationForm = () => {
           value={formData.decimals}
           onChange={(value) => handleFieldChange("decimals", value)}
           required
+        />
+
+        <MarketConfig 
+          supply={formData.supply}
+          onConfigChange={handleMarketConfigChange}
         />
       </div>
 
