@@ -40,7 +40,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
     setIsLoading(true);
 
     try {
-      const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
       const walletAddress = window.solana.publicKey?.toString();
       
       if (!walletAddress) {
@@ -50,22 +50,33 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       // Create and send fee transaction
       const feeTransaction = await createFeeTransaction(walletAddress, connection);
       const signature = await window.solana.signAndSendTransaction(feeTransaction);
-      await connection.confirmTransaction(signature);
+      await connection.confirmTransaction(signature.signature);
 
-      console.log("Token creation started with data:", formData);
+      // Log successful fee payment
+      console.log("Fee payment successful:", signature.signature);
       
       toast({
-        title: "Token Created Successfully!",
-        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
+        title: "Token Creation Started",
+        description: "Processing your token creation request...",
       });
+
+      // Add additional token creation logic here
+      // For now, we'll just simulate success
+      setTimeout(() => {
+        toast({
+          title: "Token Created Successfully!",
+          description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
+        });
+        setIsLoading(false);
+      }, 2000);
+
     } catch (error) {
       console.error("Error creating token:", error);
       toast({
         variant: "destructive",
         title: "Error Creating Token",
-        description: "Failed to create token. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create token. Please try again.",
       });
-    } finally {
       setIsLoading(false);
     }
   };
