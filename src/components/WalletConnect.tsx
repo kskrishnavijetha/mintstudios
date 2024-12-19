@@ -133,18 +133,53 @@ const WalletConnect = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      const { solana } = window;
+      if (solana) {
+        await solana.disconnect();
+        setConnected(false);
+        setPublicKey(null);
+        
+        // Clear any local storage or session data if needed
+        localStorage.removeItem('walletConnection');
+        
+        toast({
+          title: "Signed Out Successfully",
+          description: "You have been signed out of your wallet",
+        });
+      }
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        variant: "destructive",
+        title: "Sign Out Failed",
+        description: "Failed to sign out. Please try again.",
+      });
+    }
+  };
+
   if (connected) {
     return (
-      <Button
-        variant="secondary"
-        onClick={handleDisconnect}
-        className="relative min-w-[140px] justify-center"
-      >
-        <span className="absolute top-1/2 -translate-y-1/2 left-2 w-2 h-2 rounded-full bg-green-500" />
-        <span className="ml-4">
-          {publicKey ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : 'Connected'}
-        </span>
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          variant="secondary"
+          onClick={handleDisconnect}
+          className="relative min-w-[140px] justify-center"
+        >
+          <span className="absolute top-1/2 -translate-y-1/2 left-2 w-2 h-2 rounded-full bg-green-500" />
+          <span className="ml-4">
+            {publicKey ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : 'Connected'}
+          </span>
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={handleSignOut}
+          className="min-w-[100px] justify-center"
+        >
+          Sign Out
+        </Button>
+      </div>
     );
   }
 
