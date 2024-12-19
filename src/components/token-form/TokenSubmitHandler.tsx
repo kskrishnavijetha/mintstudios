@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -28,69 +28,100 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("Starting token creation process");
-    console.log("Checking wallet connection...");
-    console.log("Window.solana:", window.solana);
-
-    if (!window.solana?.isConnected) {
-      toast({
-        variant: "destructive",
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet before creating a token",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      console.log("Creating connection to Solana network...");
-      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-      
-      console.log("Getting wallet address...");
-      const walletAddress = window.solana.publicKey?.toString();
-      console.log("Wallet address:", walletAddress);
-      
-      if (!walletAddress) {
-        throw new Error("Wallet address not found");
+      if (!window.solana) {
+        console.error("Wallet not found");
+        toast({
+          variant: "destructive",
+          title: "Wallet Not Found",
+          description: "Please install and connect a Solana wallet",
+        });
+        return;
       }
 
-      console.log("Creating fee transaction...");
-      const feeTransaction = await createFeeTransaction(walletAddress, connection);
-      console.log("Fee transaction created:", feeTransaction);
+      if (!window.solana.isConnected) {
+        console.error("Wallet not connected");
+        toast({
+          variant: "destructive",
+          title: "Wallet Not Connected",
+          description: "Please connect your wallet before creating a token",
+        });
+        return;
+      }
 
-      console.log("Signing and sending fee transaction...");
+      setIsLoading(true);
+      console.log("Starting token creation process...");
+
+      // Create connection to devnet
+      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      console.log("Connected to Solana devnet");
+
+      // Get wallet public key
+      const walletPublicKey = window.solana.publicKey;
+      if (!walletPublicKey) {
+        throw new Error("Wallet public key not found");
+      }
+      console.log("Wallet public key:", walletPublicKey.toString());
+
+      // Create and send fee transaction
+      console.log("Creating fee transaction...");
+      const feeTransaction = await createFeeTransaction(walletPublicKey.toString(), connection);
+      
+      console.log("Sending fee transaction for signing...");
       const signature = await window.solana.signAndSendTransaction(feeTransaction);
       console.log("Fee transaction signature:", signature);
 
-      console.log("Confirming fee transaction...");
+      console.log("Waiting for fee transaction confirmation...");
       await connection.confirmTransaction(signature);
+      console.log("Fee transaction confirmed");
 
-      // Log successful fee payment
-      console.log("Fee payment successful:", signature);
-      
+      // Create the token mint
+      console.log("Creating token mint...");
+      const mint = await createMint(
+        connection,
+        window.solana,
+        walletPublicKey,
+        walletPublicKey,
+        Number(formData.decimals)
+      );
+      console.log("Token mint created:", mint.toString());
+
+      // Create associated token account
+      console.log("Creating associated token account...");
+      const tokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        window.solana,
+        mint,
+        walletPublicKey
+      );
+      console.log("Token account created:", tokenAccount.address.toString());
+
+      // Mint tokens
+      console.log("Minting tokens...");
+      const mintAmount = BigInt(Number(formData.supply) * Math.pow(10, Number(formData.decimals)));
+      await mintTo(
+        connection,
+        window.solana,
+        mint,
+        tokenAccount.address,
+        walletPublicKey,
+        mintAmount
+      );
+      console.log("Tokens minted successfully");
+
       toast({
-        title: "Token Creation Started",
-        description: "Processing your token creation request...",
+        title: "Token Created Successfully!",
+        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
       });
 
-      // Add additional token creation logic here
-      // For now, we'll just simulate success
-      setTimeout(() => {
-        toast({
-          title: "Token Created Successfully!",
-          description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
-        });
-        setIsLoading(false);
-      }, 2000);
-
     } catch (error) {
-      console.error("Error creating token:", error);
+      console.error("Error in token creation:", error);
       toast({
         variant: "destructive",
         title: "Error Creating Token",
         description: error instanceof Error ? error.message : "Failed to create token. Please try again.",
       });
+    } finally {
       setIsLoading(false);
     }
   };
