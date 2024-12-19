@@ -1,14 +1,8 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { Loader2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import ConnectedWallet from "./wallet/ConnectedWallet";
+import DisconnectedWallet from "./wallet/DisconnectedWallet";
 
 const WalletConnect = () => {
   const [connected, setConnected] = useState(false);
@@ -141,7 +135,6 @@ const WalletConnect = () => {
         setConnected(false);
         setPublicKey(null);
         
-        // Clear any local storage or session data if needed
         localStorage.removeItem('walletConnection');
         
         toast({
@@ -161,54 +154,19 @@ const WalletConnect = () => {
 
   if (connected) {
     return (
-      <div className="flex gap-2">
-        <Button
-          variant="secondary"
-          onClick={handleDisconnect}
-          className="relative min-w-[140px] justify-center"
-        >
-          <span className="absolute top-1/2 -translate-y-1/2 left-2 w-2 h-2 rounded-full bg-green-500" />
-          <span className="ml-4">
-            {publicKey ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : 'Connected'}
-          </span>
-        </Button>
-        <Button
-          variant="destructive"
-          onClick={handleSignOut}
-          className="min-w-[100px] justify-center"
-        >
-          Sign Out
-        </Button>
-      </div>
+      <ConnectedWallet
+        publicKey={publicKey}
+        onDisconnect={handleDisconnect}
+        onSignOut={handleSignOut}
+      />
     );
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          disabled={connecting}
-          className="relative min-w-[140px] justify-center"
-        >
-          {connecting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connecting...
-            </>
-          ) : (
-            "Connect Wallet"
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => handleConnect('phantom')}>
-          Connect Phantom
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleConnect('solflare')}>
-          Connect Solflare
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <DisconnectedWallet
+      connecting={connecting}
+      onConnect={handleConnect}
+    />
   );
 };
 
