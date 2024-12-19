@@ -76,6 +76,11 @@ const TokenCreationForm = () => {
         })
       );
 
+      // Get the latest blockhash
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = senderPubkey;
+
       // Request signature from wallet
       const { solana } = window;
       if (!solana?.isConnected) {
