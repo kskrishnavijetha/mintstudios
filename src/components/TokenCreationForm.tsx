@@ -7,6 +7,7 @@ import { BasicInformation } from "./token-form/BasicInformation";
 import { TokenDetails } from "./token-form/TokenDetails";
 import { SocialLinks } from "./token-form/SocialLinks";
 import { useToast } from "@/hooks/use-toast";
+import WalletConnect from "./WalletConnect";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -49,36 +50,58 @@ const TokenCreationForm = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold">Create Token</h3>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Create Token</h3>
+          <WalletConnect />
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <BasicInformation 
+            formData={formData} 
+            onFieldChange={handleFieldChange} 
+          />
+
+          <TokenDetails 
+            formData={formData}
+            onFieldChange={handleFieldChange}
+            onImageUpload={handleImageUpload}
+            selectedImage={selectedImage}
+          />
+
+          <SocialLinks 
+            formData={formData}
+            onFieldChange={handleFieldChange}
+          />
+
+          <TokenSubmitHandler formData={formData} />
+        </form>
       </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <BasicInformation 
-          formData={formData} 
-          onFieldChange={handleFieldChange} 
-        />
-
-        <TokenDetails 
-          formData={formData}
-          onFieldChange={handleFieldChange}
-          onImageUpload={handleImageUpload}
-          selectedImage={selectedImage}
-        />
-
-        <SocialLinks 
-          formData={formData}
-          onFieldChange={handleFieldChange}
-        />
-
-        <TokenSubmitHandler formData={formData} />
-      </form>
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Additional Actions</h2>
-        <MarketIdCreator />
-        <FreezeAuthorityRevoker />
-        <MintAuthorityRevoker />
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Create Market</h3>
+            <WalletConnect />
+          </div>
+          <MarketIdCreator />
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Revoke Freeze Authority</h3>
+            <WalletConnect />
+          </div>
+          <FreezeAuthorityRevoker />
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Revoke Mint Authority</h3>
+            <WalletConnect />
+          </div>
+          <MintAuthorityRevoker />
+        </div>
       </div>
     </div>
   );
