@@ -26,6 +26,8 @@ const TokenCreationForm = () => {
     telegram: "",
     discord: "",
     image: null as File | null,
+    minOrderSize: "1", // Added missing field
+    tickSize: "0.1", // Added missing field
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
