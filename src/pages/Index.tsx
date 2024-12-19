@@ -27,38 +27,18 @@ const Index = () => {
         </div>
 
         <div className="glass-card p-6 space-y-6">
-          <h2 className="text-2xl font-semibold">About Solana Token Creator</h2>
-          <div className="space-y-4 text-muted-foreground">
-            <p>
-              Solana Token Creator is a powerful yet simple tool designed to help you create SPL tokens on the Solana blockchain without any coding knowledge. SPL tokens are the Solana equivalent of ERC-20 tokens on Ethereum, serving as a standard for fungible assets within the Solana ecosystem.
-            </p>
-            
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">Key Features</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>User-friendly interface</li>
-                  <li>Customizable token attributes</li>
-                  <li>Wallet integration</li>
-                  <li>Decentralized and secure</li>
-                </ul>
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-semibold text-foreground">Token Properties</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Custom name and symbol</li>
-                  <li>Configurable supply</li>
-                  <li>Adjustable decimals</li>
-                  <li>Metadata support</li>
-                </ul>
-              </div>
-            </div>
-
-            <p>
-              Our platform leverages Solana's high-speed and low-cost infrastructure, ensuring your tokens are created quickly and securely. With integrated wallet support and comprehensive token management features, you can focus on building your project while we handle the technical details.
-            </p>
-          </div>
+          <h2 className="text-2xl font-semibold">How to Use Solana Token Creator</h2>
+          <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+            <li>Connect your Solana wallet</li>
+            <li>Specify the desired name for your Token</li>
+            <li>Indicate the symbol (max 8 characters)</li>
+            <li>Determine the Supply of your Token</li>
+            <li>Select the decimals quantity (default recommended 9 for all tokens)</li>
+            <li>Upload the image for your token</li>
+            <li>Provide a brief description for your SPL Token</li>
+            <li>Add Website, Twitter, Telegram, Discord</li>
+            <li>Click on create, accept the transaction and wait until your tokens are ready</li>
+          </ol>
         </div>
 
         <Card className="glass-card p-6">
