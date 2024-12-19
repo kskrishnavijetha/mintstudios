@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl, PublicKey, Transaction, Keypair, Signer } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey, Transaction, Keypair } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -58,22 +58,13 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
 
       const walletPublicKey = new PublicKey(solana.publicKey.toString());
       
-      // Create a Signer interface instead of trying to cast to Keypair
-      const signer: Signer = {
-        publicKey: walletPublicKey,
-        secretKey: Keypair.generate().secretKey,
-        signTransaction: async (transaction: Transaction) => {
-          return await solana.signTransaction(transaction);
-        },
-        signAllTransactions: async (transactions: Transaction[]) => {
-          return await solana.signAllTransactions(transactions);
-        }
-      };
+      // Create a new keypair for the mint
+      const mintKeypair = Keypair.generate();
 
       // Create the token mint
       const mint = await createMint(
         connection,
-        signer,
+        mintKeypair, // Use the generated keypair as the payer
         walletPublicKey,
         walletPublicKey,
         Number(formData.decimals)
@@ -84,7 +75,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Get the token account
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        signer,
+        mintKeypair,
         mint,
         walletPublicKey
       );
@@ -94,7 +85,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Mint tokens to the token account
       const mintTx = await mintTo(
         connection,
-        signer,
+        mintKeypair,
         mint,
         tokenAccount.address,
         walletPublicKey,
