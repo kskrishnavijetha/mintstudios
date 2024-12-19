@@ -1,7 +1,7 @@
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-export const CREATION_FEE = 0.03; // Fee in SOL
-export const FEE_RECIPIENT = new PublicKey("91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi");
+export const CREATION_FEE = 0.001; // Fee in SOL
+export const FEE_RECIPIENT = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
 export const createFeeTransaction = async (
   walletAddress: string,

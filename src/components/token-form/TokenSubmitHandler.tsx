@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
@@ -41,22 +42,44 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
 
     try {
       const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
-      const transaction = await createFeeTransaction(walletAddress, connection);
-
       const { solana } = window;
+      
       if (!solana?.isConnected) {
         throw new Error("Wallet not connected");
       }
 
-      const signedTx = await solana.signAndSendTransaction(transaction);
-      console.log("Transaction sent:", signedTx);
-      
-      const confirmation = await connection.confirmTransaction(signedTx, 'confirmed');
-      console.log("Transaction confirmed:", confirmation);
+      // Create the token mint
+      const mint = await createMint(
+        connection,
+        solana.publicKey,
+        solana.publicKey,
+        solana.publicKey,
+        Number(formData.decimals)
+      );
 
-      if (confirmation.value.err) {
-        throw new Error("Transaction failed");
-      }
+      console.log("Token mint created:", mint.toBase58());
+
+      // Get the token account
+      const tokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        solana.publicKey,
+        mint,
+        solana.publicKey
+      );
+
+      console.log("Token account:", tokenAccount.address.toBase58());
+
+      // Mint tokens to the token account
+      const mintTx = await mintTo(
+        connection,
+        solana.publicKey,
+        mint,
+        tokenAccount.address,
+        solana.publicKey,
+        Number(formData.supply) * Math.pow(10, Number(formData.decimals))
+      );
+
+      console.log("Mint transaction:", mintTx);
 
       toast({
         title: "Token Created Successfully!",
@@ -67,7 +90,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       toast({
         variant: "destructive",
         title: "Error Creating Token",
-        description: "Failed to process the token creation. Please try again.",
+        description: "Failed to create token. Please try again.",
       });
     } finally {
       setIsLoading(false);
