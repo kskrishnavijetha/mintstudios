@@ -74,6 +74,10 @@ const MintAuthorityRevoker = () => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Revoke Mint Authority</h3>
+      <p className="text-sm text-muted-foreground">
+        Revoking mint authority ensures that there can be no more tokens minted than the total supply. 
+        This provides security and peace of mind to buyers. The cost is 0.03 SOL.
+      </p>
       <div>
         <Label htmlFor="mintTokenAddress">Token Address</Label>
         <Input
