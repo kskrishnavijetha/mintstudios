@@ -56,7 +56,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
 
       // Create a wallet adapter that implements the Signer interface
       const wallet: Signer = {
-        publicKey: solana.publicKey,
+        publicKey: new PublicKey(solana.publicKey.toString()),
         secretKey: new Uint8Array(32), // Dummy secret key as we're using a connected wallet
         signTransaction: async (transaction: Transaction) => {
           return await solana.signTransaction(transaction);
