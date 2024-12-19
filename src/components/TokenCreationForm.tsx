@@ -10,6 +10,9 @@ import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import MarketSettings from "./token/MarketSettings";
+import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
+import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
+import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
 import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
 
 const TokenCreationForm = () => {
@@ -89,61 +92,70 @@ const TokenCreationForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <TokenFormFields
-        formData={formData}
-        setFormData={setFormData}
-        handleSupplyChange={(value) => setFormData({ ...formData, supply: value })}
-      />
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <TokenFormFields
+          formData={formData}
+          setFormData={setFormData}
+          handleSupplyChange={(value) => setFormData({ ...formData, supply: value })}
+        />
 
-      <MarketSettings formData={formData} setFormData={setFormData} />
+        <MarketSettings formData={formData} setFormData={setFormData} />
 
-      <div className="grid gap-2">
-        <Label htmlFor="image">Token Image</Label>
-        <div className="flex items-center gap-4">
-          <Input
-            id="image"
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="cursor-pointer"
-          />
-          {formData.image && (
-            <img
-              src={URL.createObjectURL(formData.image)}
-              alt="Token preview"
-              className="h-12 w-12 rounded-full object-cover"
+        <div className="grid gap-2">
+          <Label htmlFor="image">Token Image</Label>
+          <div className="flex items-center gap-4">
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="cursor-pointer"
             />
+            {formData.image && (
+              <img
+                src={URL.createObjectURL(formData.image)}
+                alt="Token preview"
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            placeholder="Enter token description"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            className="min-h-[100px]"
+          />
+        </div>
+
+        <SocialLinks formData={formData} setFormData={setFormData} />
+
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Token...
+            </>
+          ) : (
+            "Create Token (Fee: 0.03 SOL)"
           )}
+        </Button>
+      </form>
+
+      <div className="space-y-4 pt-6 border-t">
+        <h3 className="text-lg font-semibold">Token Management</h3>
+        <div className="space-y-4">
+          <OpenbookMarketCreator />
+          <FreezeAuthorityRevoker />
+          <MintAuthorityRevoker />
         </div>
       </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          placeholder="Enter token description"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="min-h-[100px]"
-        />
-      </div>
-
-      <SocialLinks formData={formData} setFormData={setFormData} />
-
-      <Button className="w-full" type="submit" disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating Token...
-          </>
-        ) : (
-          <>
-            Create Token (Fee: 0.03 SOL)
-          </>
-        )}
-      </Button>
-    </form>
+    </div>
   );
 };
 
