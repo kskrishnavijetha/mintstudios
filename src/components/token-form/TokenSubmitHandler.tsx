@@ -6,11 +6,9 @@ import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
 import { FeeDisplay } from "./FeeDisplay";
 
-// Initialize Buffer for browser environment
-if (typeof window !== 'undefined') {
-  const { Buffer } = require('buffer');
-  window.Buffer = Buffer;
-}
+// Initialize Buffer globally
+import { Buffer } from 'buffer';
+globalThis.Buffer = Buffer;
 
 interface TokenSubmitHandlerProps {
   walletAddress: string | null;
