@@ -9,7 +9,6 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
-import MarketSettings from "./token/MarketSettings";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
 import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
@@ -30,8 +29,6 @@ const TokenCreationForm = () => {
     telegram: "",
     discord: "",
     image: null as File | null,
-    minOrderSize: "1",
-    tickSize: "0.1",
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,8 +96,6 @@ const TokenCreationForm = () => {
           setFormData={setFormData}
           handleSupplyChange={(value) => setFormData({ ...formData, supply: value })}
         />
-
-        <MarketSettings formData={formData} setFormData={setFormData} />
 
         <div className="grid gap-2">
           <Label htmlFor="image">Token Image</Label>

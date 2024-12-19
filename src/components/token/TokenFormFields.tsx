@@ -7,8 +7,6 @@ interface TokenFormFieldsProps {
     symbol: string;
     supply: string;
     decimals: string;
-    minOrderSize: string;
-    tickSize: string;
   };
   setFormData: (data: any) => void;
   handleSupplyChange: (value: string) => void;
