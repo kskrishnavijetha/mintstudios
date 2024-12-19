@@ -3,12 +3,12 @@ import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 export const CREATION_FEE = 0.03; // Fee in SOL
 export const MARKET_ID_FEE = 0.03; // Fee in SOL
 export const FREEZE_AUTHORITY_FEE = 0.03; // Fee in SOL
-export const MINT_AUTHORITY_FEE = 0.03; // Fee in SOL
+export const MINT_AUTHORITY_FEE = 0.03; // Fee in SOL (updated from 0.02)
 export const FEE_RECIPIENT = new PublicKey("64tMohDoBgFNRsm8U4XWbjFuixVs1qPLfmgoD8gR5ijo");
 
-export type FeeType = 'token_creation' | 'market_id' | 'freeze_authority' | 'mint_authority';
+type FeeType = 'token_creation' | 'market_id' | 'freeze_authority' | 'mint_authority';
 
-export const getFeeAmount = (feeType: FeeType): number => {
+const getFeeAmount = (feeType: FeeType): number => {
   switch (feeType) {
     case 'token_creation':
       return CREATION_FEE;
