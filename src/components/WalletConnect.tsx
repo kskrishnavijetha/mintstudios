@@ -1,29 +1,24 @@
-import { useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Button } from "@/components/ui/button";
 
 const WalletConnect = () => {
-  const [connected, setConnected] = useState(false);
-
-  const handleConnect = () => {
-    // In reality, you'd implement actual wallet connection here
-    setConnected(true);
-  };
+  const { connected } = useWallet();
 
   return (
-    <Button
-      variant={connected ? "secondary" : "default"}
-      onClick={handleConnect}
-      className="relative"
-    >
-      {connected ? (
-        <>
+    <div className="relative">
+      <WalletMultiButton className={`${
+        connected 
+          ? "bg-secondary hover:bg-secondary/90" 
+          : "bg-primary hover:bg-primary/90"
+        } text-white font-bold py-2 px-4 rounded relative flex items-center gap-2`
+      }>
+        {connected && (
           <span className="absolute top-1/2 -translate-y-1/2 left-2 w-2 h-2 rounded-full bg-green-500" />
-          <span className="ml-4">Connected</span>
-        </>
-      ) : (
-        "Connect Wallet"
-      )}
-    </Button>
+        )}
+        {connected ? "Connected" : "Connect Wallet"}
+      </WalletMultiButton>
+    </div>
   );
 };
 
