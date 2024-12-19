@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import ConnectedWallet from "./wallet/ConnectedWallet";
 import DisconnectedWallet from "./wallet/DisconnectedWallet";
 
@@ -72,7 +72,7 @@ const WalletConnect = () => {
         return;
       }
 
-      const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+      const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
       const resp = await solana.connect();
       const walletPubKey = new PublicKey(resp.publicKey.toString());
       const walletAddress = walletPubKey.toString();
