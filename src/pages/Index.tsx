@@ -16,16 +16,16 @@ const Index = () => {
       
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
+          <h1 className="text-6xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
             Solana Token Creator
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-xl text-muted-foreground">
             Create your own SPL token on Solana blockchain at just 0.03 SOL
           </p>
         </div>
 
         <div className="glass-card p-6 space-y-6">
-          <h2 className="text-xl font-semibold">How to Use Solana Token Creator</h2>
+          <h2 className="text-2xl font-semibold">How to Use Solana Token Creator</h2>
           <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
             <li>Connect your Solana wallet</li>
             <li>Specify the desired name for your Token</li>
