@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey, Keypair } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -20,6 +20,20 @@ interface TokenSubmitHandlerProps {
     discord: string;
   };
 }
+
+// Create a wallet adapter that implements the Signer interface
+const createWalletAdapter = (phantomWallet: any) => {
+  return {
+    publicKey: phantomWallet.publicKey,
+    secretKey: new Uint8Array(32), // Dummy secret key, not used with Phantom
+    async signTransaction(tx: any) {
+      return await phantomWallet.signTransaction(tx);
+    },
+    async signAllTransactions(txs: any[]) {
+      return await phantomWallet.signAllTransactions(txs);
+    }
+  };
+};
 
 export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +77,9 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       }
       console.log("Wallet public key:", walletPublicKey.toString());
 
+      // Create wallet adapter
+      const walletAdapter = createWalletAdapter(window.solana);
+
       // Create and send fee transaction
       console.log("Creating fee transaction...");
       const feeTransaction = await createFeeTransaction(walletPublicKey.toString(), connection);
@@ -79,7 +96,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       console.log("Creating token mint...");
       const mint = await createMint(
         connection,
-        window.solana,
+        walletAdapter,
         walletPublicKey,
         walletPublicKey,
         Number(formData.decimals)
@@ -90,7 +107,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       console.log("Creating associated token account...");
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        window.solana,
+        walletAdapter,
         mint,
         walletPublicKey
       );
@@ -101,7 +118,7 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
       const mintAmount = BigInt(Number(formData.supply) * Math.pow(10, Number(formData.decimals)));
       await mintTo(
         connection,
-        window.solana,
+        walletAdapter,
         mint,
         tokenAccount.address,
         walletPublicKey,
