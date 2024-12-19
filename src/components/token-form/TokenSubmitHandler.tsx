@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl, PublicKey, Keypair } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -94,10 +94,10 @@ export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
 
       console.log("Sending fee transaction for signing...");
       const signature = await window.solana.signAndSendTransaction(feeTransaction);
-      console.log("Fee transaction signature:", signature);
+      console.log("Fee transaction signature:", signature.signature);
 
       console.log("Waiting for fee transaction confirmation...");
-      await connection.confirmTransaction(signature);
+      await connection.confirmTransaction(signature.signature);
       console.log("Fee transaction confirmed");
 
       console.log("Creating token mint...");
