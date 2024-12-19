@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { Loader2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const WalletConnect = () => {
   const [connected, setConnected] = useState(false);
@@ -14,7 +20,7 @@ const WalletConnect = () => {
     const checkWalletConnection = async () => {
       try {
         const { solana } = window;
-        if (solana?.isPhantom && solana.isConnected) {
+        if ((solana?.isPhantom || solana?.isSolflare) && solana.isConnected) {
           const response = await solana.connect({ onlyIfTrusted: true });
           setConnected(true);
           setPublicKey(response.publicKey.toString());
@@ -26,10 +32,8 @@ const WalletConnect = () => {
       }
     };
 
-    // Check connection status when component mounts
     checkWalletConnection();
 
-    // Listen for wallet connection changes
     window.solana?.on('connect', () => {
       checkWalletConnection();
     });
@@ -43,25 +47,34 @@ const WalletConnect = () => {
       });
     });
 
-    // Cleanup listeners
     return () => {
       window.solana?.removeAllListeners('connect');
       window.solana?.removeAllListeners('disconnect');
     };
   }, [toast]);
 
-  const handleConnect = async () => {
+  const handleConnect = async (walletType: 'phantom' | 'solflare') => {
     try {
       setConnecting(true);
       const { solana } = window;
       
-      if (!solana?.isPhantom) {
+      if (walletType === 'phantom' && !solana?.isPhantom) {
         toast({
           variant: "destructive",
-          title: "Wallet Not Found",
+          title: "Phantom Wallet Not Found",
           description: "Please install Phantom wallet",
         });
         window.open("https://phantom.app/", "_blank");
+        return;
+      }
+
+      if (walletType === 'solflare' && !solana?.isSolflare) {
+        toast({
+          variant: "destructive",
+          title: "Solflare Wallet Not Found",
+          description: "Please install Solflare wallet",
+        });
+        window.open("https://solflare.com/", "_blank");
         return;
       }
 
@@ -82,7 +95,7 @@ const WalletConnect = () => {
       setPublicKey(walletAddress);
       
       toast({
-        title: "Wallet Connected",
+        title: `${walletType === 'phantom' ? 'Phantom' : 'Solflare'} Wallet Connected`,
         description: `Connected to ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`,
       });
     } catch (error) {
@@ -120,29 +133,47 @@ const WalletConnect = () => {
     }
   };
 
+  if (connected) {
+    return (
+      <Button
+        variant="secondary"
+        onClick={handleDisconnect}
+        className="relative min-w-[140px] justify-center"
+      >
+        <span className="absolute top-1/2 -translate-y-1/2 left-2 w-2 h-2 rounded-full bg-green-500" />
+        <span className="ml-4">
+          {publicKey ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : 'Connected'}
+        </span>
+      </Button>
+    );
+  }
+
   return (
-    <Button
-      variant={connected ? "secondary" : "default"}
-      onClick={connected ? handleDisconnect : handleConnect}
-      disabled={connecting}
-      className="relative min-w-[140px] justify-center"
-    >
-      {connecting ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Connecting...
-        </>
-      ) : connected ? (
-        <>
-          <span className="absolute top-1/2 -translate-y-1/2 left-2 w-2 h-2 rounded-full bg-green-500" />
-          <span className="ml-4">
-            {publicKey ? `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}` : 'Connected'}
-          </span>
-        </>
-      ) : (
-        "Connect Wallet"
-      )}
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          disabled={connecting}
+          className="relative min-w-[140px] justify-center"
+        >
+          {connecting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Connecting...
+            </>
+          ) : (
+            "Connect Wallet"
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => handleConnect('phantom')}>
+          Connect Phantom
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleConnect('solflare')}>
+          Connect Solflare
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
