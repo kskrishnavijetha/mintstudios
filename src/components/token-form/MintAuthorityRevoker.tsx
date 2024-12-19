@@ -3,24 +3,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import WalletConnect from "../WalletConnect";
+import { useToast } from "@/hooks/use-toast";
 
-const FEE_COLLECTION_ADDRESS = "91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi";
+interface MintAuthorityRevokerProps {
+  walletAddress: string | null;
+}
 
-export const MintAuthorityRevoker = () => {
+export const MintAuthorityRevoker = ({ walletAddress }: MintAuthorityRevokerProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenAddress, setTokenAddress] = useState("");
+  const { toast } = useToast();
 
   const handleRevoke = async () => {
+    if (!walletAddress) {
+      toast({
+        variant: "destructive",
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to revoke mint authority",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      console.log(`Collecting 0.02 SOL fee to address: ${FEE_COLLECTION_ADDRESS}`);
-      // Here you would implement the actual fee collection logic
+      console.log(`Revoking mint authority for wallet: ${walletAddress}`);
+      // Here you would implement the actual revoke logic
       setTimeout(() => {
+        toast({
+          title: "Mint Authority Revoked",
+          description: "Successfully revoked mint authority",
+        });
         setIsLoading(false);
       }, 2000);
     } catch (error) {
-      console.error("Error collecting fee:", error);
+      console.error("Error revoking mint authority:", error);
       setIsLoading(false);
     }
   };
@@ -30,10 +46,6 @@ export const MintAuthorityRevoker = () => {
       <div className="flex justify-between items-center">
         <h3 className="font-medium">Revoke Mint Authority</h3>
         <span className="text-sm text-muted-foreground">Fee: 0.02 SOL</span>
-      </div>
-
-      <div className="flex justify-end">
-        <WalletConnect />
       </div>
 
       <div className="grid gap-2">
@@ -48,7 +60,7 @@ export const MintAuthorityRevoker = () => {
 
       <Button 
         onClick={handleRevoke} 
-        disabled={isLoading}
+        disabled={isLoading || !walletAddress}
         variant="destructive"
         className="w-full"
       >

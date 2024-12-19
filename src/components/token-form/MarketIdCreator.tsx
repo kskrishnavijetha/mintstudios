@@ -3,12 +3,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import WalletConnect from "../WalletConnect";
+import { useToast } from "@/hooks/use-toast";
 
-const FEE_COLLECTION_ADDRESS = "91yc6aE5JeW7LLPyUk98ZXhDz27Dj2C6KbKnhLbujBDi";
+interface MarketIdCreatorProps {
+  walletAddress: string | null;
+}
 
-export const MarketIdCreator = () => {
+export const MarketIdCreator = ({ walletAddress }: MarketIdCreatorProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     baseToken: "",
     minOrderSize: "",
@@ -16,16 +19,28 @@ export const MarketIdCreator = () => {
   });
 
   const handleCreate = async () => {
+    if (!walletAddress) {
+      toast({
+        variant: "destructive",
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to create a market ID",
+      });
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate market ID creation with fee collection
     try {
-      console.log(`Collecting 0.03 SOL fee to address: ${FEE_COLLECTION_ADDRESS}`);
-      // Here you would implement the actual fee collection logic
+      console.log(`Creating market ID for wallet: ${walletAddress}`);
+      // Here you would implement the actual market ID creation logic
       setTimeout(() => {
+        toast({
+          title: "Market ID Created",
+          description: "Successfully created market ID",
+        });
         setIsLoading(false);
       }, 2000);
     } catch (error) {
-      console.error("Error collecting fee:", error);
+      console.error("Error creating market ID:", error);
       setIsLoading(false);
     }
   };
@@ -41,53 +56,47 @@ export const MarketIdCreator = () => {
         <span className="text-sm text-muted-foreground">Fee: 0.03 SOL</span>
       </div>
 
-      <div className="flex justify-end">
-        <WalletConnect />
+      <div className="grid gap-2">
+        <Label htmlFor="baseToken">Base Token</Label>
+        <Input
+          id="baseToken"
+          placeholder="Enter base token address"
+          value={formData.baseToken}
+          onChange={(e) => handleChange("baseToken", e.target.value)}
+        />
       </div>
 
-      <div className="space-y-4">
-        <div className="grid gap-2">
-          <Label htmlFor="baseToken">Base Token</Label>
-          <Input
-            id="baseToken"
-            placeholder="Enter base token address"
-            value={formData.baseToken}
-            onChange={(e) => handleChange("baseToken", e.target.value)}
-          />
-        </div>
+      <div className="grid gap-2">
+        <Label htmlFor="minOrderSize">Minimum Order Size</Label>
+        <Input
+          id="minOrderSize"
+          type="number"
+          placeholder="Enter minimum order size"
+          value={formData.minOrderSize}
+          onChange={(e) => handleChange("minOrderSize", e.target.value)}
+        />
+        <span className="text-xs text-muted-foreground">
+          For min order size 0.01 enter 2, for 0.1 enter 1, for 1 enter 0, for 10 enter -1, for 100 enter -2
+        </span>
+      </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="minOrderSize">Minimum Order Size</Label>
-          <Input
-            id="minOrderSize"
-            type="number"
-            placeholder="Enter minimum order size"
-            value={formData.minOrderSize}
-            onChange={(e) => handleChange("minOrderSize", e.target.value)}
-          />
-          <span className="text-xs text-muted-foreground">
-            For min order size 0.01 enter 2, for 0.1 enter 1, for 1 enter 0, for 10 enter -1, for 100 enter -2
-          </span>
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="tickSize">Tick Size</Label>
-          <Input
-            id="tickSize"
-            type="number"
-            placeholder="Enter tick size"
-            value={formData.tickSize}
-            onChange={(e) => handleChange("tickSize", e.target.value)}
-          />
-          <span className="text-xs text-muted-foreground">
-            For tick size 0.0001 enter 4, for 0.00001 enter 5, for 0.000001 enter 6, for 0.0000001 enter 7
-          </span>
-        </div>
+      <div className="grid gap-2">
+        <Label htmlFor="tickSize">Tick Size</Label>
+        <Input
+          id="tickSize"
+          type="number"
+          placeholder="Enter tick size"
+          value={formData.tickSize}
+          onChange={(e) => handleChange("tickSize", e.target.value)}
+        />
+        <span className="text-xs text-muted-foreground">
+          For tick size 0.0001 enter 4, for 0.00001 enter 5, for 0.000001 enter 6, for 0.0000001 enter 7
+        </span>
       </div>
 
       <Button 
         onClick={handleCreate} 
-        disabled={isLoading}
+        disabled={isLoading || !walletAddress}
         className="w-full"
       >
         {isLoading ? (

@@ -11,9 +11,11 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Link, Image, Upload } from "lucide-react";
 import { Button } from "./ui/button";
+import { WalletStatus, useWalletStatus } from "./shared/WalletStatus";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
+  const { walletAddress } = useWalletStatus();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [formData, setFormData] = useState({
@@ -45,6 +47,16 @@ const TokenCreationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!walletAddress) {
+      toast({
+        variant: "destructive",
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to create a token",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate token creation
@@ -65,6 +77,7 @@ const TokenCreationForm = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold">Create Token</h3>
+        <WalletStatus />
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -225,9 +238,9 @@ const TokenCreationForm = () => {
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Additional Actions</h2>
-        <MarketIdCreator />
-        <FreezeAuthorityRevoker />
-        <MintAuthorityRevoker />
+        <MarketIdCreator walletAddress={walletAddress} />
+        <FreezeAuthorityRevoker walletAddress={walletAddress} />
+        <MintAuthorityRevoker walletAddress={walletAddress} />
       </div>
     </div>
   );
