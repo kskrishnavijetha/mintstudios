@@ -5,15 +5,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
 
 interface ConnectedWalletProps {
   publicKey: string | null;
   onDisconnect: () => void;
-  onSignOut: () => void;
 }
 
-const ConnectedWallet = ({ publicKey, onDisconnect, onSignOut }: ConnectedWalletProps) => {
+const ConnectedWallet = ({ publicKey, onDisconnect }: ConnectedWalletProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -30,9 +28,6 @@ const ConnectedWallet = ({ publicKey, onDisconnect, onSignOut }: ConnectedWallet
       <DropdownMenuContent>
         <DropdownMenuItem onClick={onDisconnect}>
           Disconnect
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onSignOut}>
-          Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

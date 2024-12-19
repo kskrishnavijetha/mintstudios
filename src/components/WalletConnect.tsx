@@ -127,37 +127,11 @@ const WalletConnect = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      const { solana } = window;
-      if (solana) {
-        await solana.disconnect();
-        setConnected(false);
-        setPublicKey(null);
-        
-        localStorage.removeItem('walletConnection');
-        
-        toast({
-          title: "Signed Out Successfully",
-          description: "You have been signed out of your wallet",
-        });
-      }
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign Out Failed",
-        description: "Failed to sign out. Please try again.",
-      });
-    }
-  };
-
   if (connected) {
     return (
       <ConnectedWallet
         publicKey={publicKey}
         onDisconnect={handleDisconnect}
-        onSignOut={handleSignOut}
       />
     );
   }
