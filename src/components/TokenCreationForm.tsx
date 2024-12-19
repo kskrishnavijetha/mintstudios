@@ -9,11 +9,13 @@ import { MintAuthorityRevoker } from "./token-form/MintAuthorityRevoker";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { Link, Image } from "lucide-react";
+import { Link, Image, Upload } from "lucide-react";
+import { Button } from "./ui/button";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     symbol: "",
@@ -26,6 +28,21 @@ const TokenCreationForm = () => {
     telegram: "",
     discord: "",
   });
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      // Create a temporary URL for preview
+      const imageUrl = URL.createObjectURL(file);
+      handleFieldChange("image", imageUrl);
+      
+      toast({
+        title: "Image Selected",
+        description: "Image has been selected successfully",
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,15 +111,42 @@ const TokenCreationForm = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Token Details</h3>
             <div className="grid gap-2">
-              <Label htmlFor="image">Token Image URL</Label>
-              <div className="flex items-center space-x-2">
-                <Image className="w-5 h-5" />
-                <Input
-                  id="image"
-                  placeholder="https://example.com/token-image.png"
-                  value={formData.image}
-                  onChange={(e) => handleFieldChange("image", e.target.value)}
-                />
+              <Label htmlFor="image">Token Image</Label>
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      className="flex items-center space-x-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Upload Image</span>
+                    </Button>
+                  </div>
+                  {formData.image && (
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                      <img
+                        src={formData.image}
+                        alt="Token preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+                {selectedImage && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {selectedImage.name}
+                  </p>
+                )}
               </div>
             </div>
 
