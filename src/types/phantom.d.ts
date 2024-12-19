@@ -14,4 +14,5 @@ interface Phantom {
 
 interface Window {
   solana?: Phantom;
+  solflare?: Phantom;
 }
