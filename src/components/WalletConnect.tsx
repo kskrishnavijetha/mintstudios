@@ -76,6 +76,7 @@ const WalletConnect = ({ label = "Connect Wallet" }: WalletConnectProps) => {
         return;
       }
 
+      // Changed to mainnet-beta
       const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
       const resp = await solana.connect();
       const walletPubKey = new PublicKey(resp.publicKey.toString());

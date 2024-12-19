@@ -6,7 +6,7 @@ import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
 import { FeeDisplay } from "./FeeDisplay";
 
-// Initialize Buffer globally for browser environment
+// Initialize Buffer for browser environment
 if (typeof window !== 'undefined') {
   window.Buffer = window.Buffer || require('buffer').Buffer;
 }
@@ -46,7 +46,8 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
     setIsLoading(true);
 
     try {
-      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      // Changed to mainnet-beta
+      const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
       const { solana } = window;
       
       if (!solana?.isConnected || !solana.publicKey) {
