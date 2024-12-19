@@ -25,8 +25,11 @@ const ConnectedWallet = ({ publicKey, onDisconnect }: ConnectedWalletProps) => {
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={onDisconnect}>
+      <DropdownMenuContent align="end" className="w-[200px] bg-popover">
+        <DropdownMenuItem 
+          onClick={onDisconnect}
+          className="cursor-pointer"
+        >
           Disconnect
         </DropdownMenuItem>
       </DropdownMenuContent>
