@@ -13,7 +13,6 @@ if (typeof window !== 'undefined' && !window.Buffer) {
 }
 
 interface TokenSubmitHandlerProps {
-  walletAddress: string | null;
   formData: {
     name: string;
     symbol: string;
@@ -28,42 +27,20 @@ interface TokenSubmitHandlerProps {
   };
 }
 
-export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandlerProps) => {
+export const TokenSubmitHandler = ({ formData }: TokenSubmitHandlerProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!walletAddress) {
-      toast({
-        variant: "destructive",
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet to create a token",
-      });
-      return;
-    }
-
     setIsLoading(true);
 
     try {
       const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
-      const { solana } = window;
       
-      if (!solana?.isConnected || !solana.publicKey) {
-        throw new Error("Wallet not connected");
-      }
-
-      const walletPublicKey = new PublicKey(solana.publicKey.toString());
-      
-      // Create fee transaction
-      const feeTransaction = await createFeeTransaction(walletAddress, connection);
-      const signedFeeTransaction = await solana.signTransaction(feeTransaction);
-      const feeSignature = await connection.sendRawTransaction(signedFeeTransaction.serialize());
-      await connection.confirmTransaction(feeSignature);
-
       // Create a new keypair for the mint
       const mintKeypair = Keypair.generate();
+      const walletPublicKey = mintKeypair.publicKey;
 
       // Create the token mint
       const mint = await createMint(
