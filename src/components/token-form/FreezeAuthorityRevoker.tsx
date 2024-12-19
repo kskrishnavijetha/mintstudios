@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import WalletConnect from "../WalletConnect";
 
 export const FreezeAuthorityRevoker = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +22,10 @@ export const FreezeAuthorityRevoker = () => {
       <div className="flex justify-between items-center">
         <h3 className="font-medium">Revoke Freeze Authority</h3>
         <span className="text-sm text-muted-foreground">Fee: 0.03 SOL</span>
+      </div>
+
+      <div className="flex justify-end">
+        <WalletConnect />
       </div>
 
       <div className="grid gap-2">
