@@ -6,9 +6,10 @@ import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
 import { FeeDisplay } from "./FeeDisplay";
 
-// Initialize Buffer for browser environment
+// Initialize Buffer globally
 if (typeof window !== 'undefined') {
-  window.Buffer = window.Buffer || require('buffer').Buffer;
+  const { Buffer } = require('buffer');
+  window.Buffer = Buffer;
 }
 
 interface TokenSubmitHandlerProps {
@@ -61,7 +62,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Create the token mint
       const mint = await createMint(
         connection,
-        mintKeypair, // Use the generated keypair as the payer
+        mintKeypair,
         walletPublicKey,
         walletPublicKey,
         Number(formData.decimals)
