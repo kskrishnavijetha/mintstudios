@@ -30,7 +30,7 @@ export const MintAuthorityRevoker = () => {
       const feeTransaction = await createFeeTransaction(
         window.solana.publicKey.toString(),
         connection,
-        MINT_AUTHORITY_FEE
+        'mint_authority'
       );
       
       const signature = await window.solana.signAndSendTransaction(feeTransaction);

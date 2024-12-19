@@ -30,7 +30,7 @@ export const FreezeAuthorityRevoker = () => {
       const feeTransaction = await createFeeTransaction(
         window.solana.publicKey.toString(),
         connection,
-        FREEZE_AUTHORITY_FEE
+        'freeze_authority'
       );
       
       const signature = await window.solana.signAndSendTransaction(feeTransaction);

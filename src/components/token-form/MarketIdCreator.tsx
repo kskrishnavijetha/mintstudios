@@ -34,7 +34,7 @@ export const MarketIdCreator = () => {
       const feeTransaction = await createFeeTransaction(
         window.solana.publicKey.toString(),
         connection,
-        MARKET_ID_FEE
+        'market_id'
       );
       
       const signature = await window.solana.signAndSendTransaction(feeTransaction);
