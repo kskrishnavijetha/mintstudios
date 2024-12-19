@@ -74,6 +74,10 @@ const FreezeAuthorityRevoker = () => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Revoke Freeze Authority</h3>
+      <p className="text-sm text-muted-foreground">
+        To initiate a liquidity pool, it's essential to "Revoke Freeze Authority" for your Token. 
+        You can easily do so right here. This action requires a fee of 0.03 SOL.
+      </p>
       <div>
         <Label htmlFor="freezeTokenAddress">Token Address</Label>
         <Input
