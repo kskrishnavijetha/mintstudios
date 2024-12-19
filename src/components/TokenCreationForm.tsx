@@ -6,6 +6,8 @@ import { SubmitButton } from "./token-form/SubmitButton";
 import { MarketIdCreator } from "./token-form/MarketIdCreator";
 import { FreezeAuthorityRevoker } from "./token-form/FreezeAuthorityRevoker";
 import { MintAuthorityRevoker } from "./token-form/MintAuthorityRevoker";
+import { TokenCreationHeader } from "./token-form/TokenCreationHeader";
+import { TokenFeeSection } from "./token-form/TokenFeeSection";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
@@ -29,11 +31,19 @@ const TokenCreationForm = () => {
     discord: "",
   });
 
+  // Get the current wallet address from window.solana
+  const getCurrentWalletAddress = (): string | null => {
+    const { solana } = window;
+    if (solana?.isConnected && solana.publicKey) {
+      return solana.publicKey.toString();
+    }
+    return null;
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      // Create a temporary URL for preview
       const imageUrl = URL.createObjectURL(file);
       handleFieldChange("image", imageUrl);
       
@@ -46,6 +56,17 @@ const TokenCreationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const walletAddress = getCurrentWalletAddress();
+    if (!walletAddress) {
+      toast({
+        variant: "destructive",
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet to create a token",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate token creation
@@ -64,11 +85,13 @@ const TokenCreationForm = () => {
 
   return (
     <div className="space-y-8">
+      <TokenCreationHeader />
+      <TokenFeeSection walletAddress={getCurrentWalletAddress()} />
+      
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Token Information */}
         <div className="space-y-4">
-          {/* Basic Token Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Basic Information</h3>
+          <h3 className="text-lg font-semibold">Basic Information</h3>
             <FormField
               id="name"
               label="Token Name"
@@ -105,11 +128,11 @@ const TokenCreationForm = () => {
               onChange={(value) => handleFieldChange("decimals", value)}
               required
             />
-          </div>
+        </div>
 
-          {/* Token Details */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Token Details</h3>
+        {/* Token Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Token Details</h3>
             <div className="grid gap-2">
               <Label htmlFor="image">Token Image</Label>
               <div className="flex flex-col space-y-4">
@@ -160,11 +183,11 @@ const TokenCreationForm = () => {
                 className="min-h-[100px]"
               />
             </div>
-          </div>
+        </div>
 
-          {/* Social Links */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Social Links</h3>
+        {/* Social Links */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Social Links</h3>
             <div className="grid gap-4">
               <div className="flex items-center space-x-2">
                 <Link className="w-5 h-5" />
@@ -213,7 +236,6 @@ const TokenCreationForm = () => {
                 />
               </div>
             </div>
-          </div>
         </div>
 
         <div className="space-y-4">
