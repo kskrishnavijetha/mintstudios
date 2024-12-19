@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl, PublicKey, Transaction, Keypair } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey, Transaction, Keypair, Signer } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
 import { FeeDisplay } from "./FeeDisplay";
 
-// Initialize Buffer globally before any other code runs
-import { Buffer } from 'buffer';
-globalThis.Buffer = Buffer;
+// Initialize Buffer for browser environment
+if (typeof window !== 'undefined') {
+  const buffer = require('buffer');
+  if (!window.Buffer) {
+    window.Buffer = buffer.Buffer;
+  }
+}
 
 interface TokenSubmitHandlerProps {
   walletAddress: string | null;
@@ -54,15 +58,24 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
 
       const walletPublicKey = new PublicKey(solana.publicKey.toString());
       
-      // Create a temporary keypair for the mint authority
-      const mintAuthority = Keypair.generate();
-      
+      // Create a Signer interface instead of trying to cast to Keypair
+      const signer: Signer = {
+        publicKey: walletPublicKey,
+        secretKey: Keypair.generate().secretKey,
+        signTransaction: async (transaction: Transaction) => {
+          return await solana.signTransaction(transaction);
+        },
+        signAllTransactions: async (transactions: Transaction[]) => {
+          return await solana.signAllTransactions(transactions);
+        }
+      };
+
       // Create the token mint
       const mint = await createMint(
         connection,
-        mintAuthority, // Use the temporary keypair as the fee payer
-        walletPublicKey, // Mint authority
-        walletPublicKey, // Freeze authority
+        signer,
+        walletPublicKey,
+        walletPublicKey,
         Number(formData.decimals)
       );
 
@@ -71,7 +84,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Get the token account
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        mintAuthority, // Use the temporary keypair as the fee payer
+        signer,
         mint,
         walletPublicKey
       );
@@ -81,7 +94,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       // Mint tokens to the token account
       const mintTx = await mintTo(
         connection,
-        mintAuthority, // Use the temporary keypair as the fee payer
+        signer,
         mint,
         tokenAccount.address,
         walletPublicKey,
