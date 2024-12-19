@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Connection, clusterApiUrl, PublicKey, Transaction, Keypair } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey, Transaction, Signer } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import { useToast } from "@/hooks/use-toast";
 import { createFeeTransaction } from "@/utils/transactionUtils";
@@ -9,7 +9,7 @@ import { FeeDisplay } from "./FeeDisplay";
 // Initialize Buffer for browser environment
 import { Buffer } from 'buffer';
 if (typeof window !== 'undefined') {
-  window.Buffer = Buffer;
+  window.Buffer = window.Buffer || Buffer;
 }
 
 interface TokenSubmitHandlerProps {
@@ -55,7 +55,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
       }
 
       // Create a wallet adapter that implements the Signer interface
-      const wallet = {
+      const wallet: Signer = {
         publicKey: solana.publicKey,
         secretKey: new Uint8Array(32), // Dummy secret key as we're using a connected wallet
         signTransaction: async (transaction: Transaction) => {
@@ -64,7 +64,7 @@ export const TokenSubmitHandler = ({ walletAddress, formData }: TokenSubmitHandl
         signAllTransactions: async (transactions: Transaction[]) => {
           return await solana.signAllTransactions(transactions);
         }
-      } as Keypair;
+      };
 
       // Create the token mint
       const mint = await createMint(
