@@ -6,9 +6,9 @@ import { createFeeTransaction } from "@/utils/transactionUtils";
 import { SubmitButton } from "./SubmitButton";
 import { FeeDisplay } from "./FeeDisplay";
 
-// Initialize Buffer globally
+// Initialize Buffer globally if not already initialized
 import { Buffer } from 'buffer';
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !window.Buffer) {
   window.Buffer = Buffer;
 }
 
