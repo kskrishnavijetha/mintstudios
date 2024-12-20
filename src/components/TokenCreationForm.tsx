@@ -12,7 +12,6 @@ import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
 import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
-import WalletConnect from "./WalletConnect";
 import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
 
 const TokenCreationForm = () => {
