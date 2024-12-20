@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import TokenCreationForm from "@/components/TokenCreationForm";
 import WalletConnect from "@/components/WalletConnect";
 import {
@@ -17,6 +16,16 @@ const Index = () => {
       </div>
       
       <div className="max-w-2xl mx-auto space-y-8">
+        <div className="flex items-center justify-center mb-8">
+          <div className="bg-white p-2 rounded-lg shadow-lg">
+            <img 
+              src="/lovable-uploads/6690982c-23d7-4081-8578-6c738c457d8a.png" 
+              alt="MintStudio Logo" 
+              className="h-16 w-auto"
+            />
+          </div>
+        </div>
+
         <div className="text-center space-y-4">
           <h1 className="text-6xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
             Solana Token Creator
