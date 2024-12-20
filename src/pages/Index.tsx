@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import TokenCreationForm from "@/components/TokenCreationForm";
 import WalletConnect from "@/components/WalletConnect";
 import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import {
   Accordion,
   AccordionContent,
@@ -12,45 +13,46 @@ import {
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen w-full">
-      <AppSidebar />
-      <div className="container mx-auto px-4 py-8 min-h-screen relative">
-        <div className="absolute top-4 right-4">
-          <WalletConnect />
-        </div>
-        
-        <div className="max-w-2xl mx-auto space-y-8">
-          <div className="text-center space-y-4">
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
-              Solana Token Creator
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Create your own SPL token on Solana blockchain at just 0.03 SOL
-            </p>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="container mx-auto px-4 py-8 min-h-screen relative">
+          <div className="absolute top-4 right-4">
+            <WalletConnect />
           </div>
+          
+          <div className="max-w-2xl mx-auto space-y-8">
+            <div className="text-center space-y-4">
+              <h1 className="text-6xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
+                Solana Token Creator
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Create your own SPL token on Solana blockchain at just 0.03 SOL
+              </p>
+            </div>
 
-        <div className="glass-card p-6 space-y-6">
-          <h2 className="text-2xl font-semibold">How to Use Solana Token Creator</h2>
-          <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-            <li>Connect your Solana wallet</li>
-            <li>Specify the desired name for your Token</li>
-            <li>Indicate the symbol (max 8 characters)</li>
-            <li>Determine the Supply of your Token</li>
-            <li>Select the decimals quantity (default recommended 9 for all tokens)</li>
-            <li>Upload the image for your token</li>
-            <li>Provide a brief description for your SPL Token</li>
-            <li>Add Website, Twitter, Telegram, Discord</li>
-            <li>Click on create, accept the transaction and wait until your tokens are ready</li>
-          </ol>
-        </div>
+            <div className="glass-card p-6 space-y-6">
+              <h2 className="text-2xl font-semibold">How to Use Solana Token Creator</h2>
+              <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+                <li>Connect your Solana wallet</li>
+                <li>Specify the desired name for your Token</li>
+                <li>Indicate the symbol (max 8 characters)</li>
+                <li>Determine the Supply of your Token</li>
+                <li>Select the decimals quantity (default recommended 9 for all tokens)</li>
+                <li>Upload the image for your token</li>
+                <li>Provide a brief description for your SPL Token</li>
+                <li>Add Website, Twitter, Telegram, Discord</li>
+                <li>Click on create, accept the transaction and wait until your tokens are ready</li>
+              </ol>
+            </div>
 
-        <Card className="glass-card p-6">
-          <TokenCreationForm />
-        </Card>
+            <Card className="glass-card p-6">
+              <TokenCreationForm />
+            </Card>
 
-        <div className="glass-card p-6">
-          <h2 className="text-2xl font-semibold mb-4">Frequently Asked Questions</h2>
-          <Accordion type="single" collapsible className="w-full">
+            <div className="glass-card p-6">
+              <h2 className="text-2xl font-semibold mb-4">Frequently Asked Questions</h2>
+              <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
               <AccordionTrigger>What is an SPL Token?</AccordionTrigger>
               <AccordionContent>
@@ -85,12 +87,12 @@ const Index = () => {
                 No, creating a token doesn't automatically list it on exchanges. You'll need to apply separately to exchanges and meet their listing requirements. However, your token can be traded on decentralized exchanges (DEX) once you provide liquidity.
               </AccordionContent>
             </AccordionItem>
-          </Accordion>
-        </div>
+              </Accordion>
+            </div>
 
-        <div className="glass-card p-6 space-y-6">
-          <h2 className="text-2xl font-semibold">About Solana SPL Token Creator</h2>
-          <div className="space-y-4 text-muted-foreground">
+            <div className="glass-card p-6 space-y-6">
+              <h2 className="text-2xl font-semibold">About Solana SPL Token Creator</h2>
+              <div className="space-y-4 text-muted-foreground">
             <p>
               Solana SPL Token Creator is a tool designed to simplify the process of creating SPL (Solana Program Library) tokens on the Solana blockchain. SPL tokens are the Solana equivalent of ERC-20 tokens on Ethereum, serving as a standard for fungible and non-fungible assets within the Solana ecosystem.
             </p>
@@ -118,15 +120,16 @@ const Index = () => {
                 </ul>
               </div>
             </div>
+              </div>
+            </div>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Powered by Solana blockchain
+            </p>
           </div>
         </div>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Powered by Solana blockchain
-        </p>
-        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
