@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import TokenCreationForm from "@/components/TokenCreationForm";
 import WalletConnect from "@/components/WalletConnect";
+import { AppSidebar } from "@/components/AppSidebar";
 import {
   Accordion,
   AccordionContent,
@@ -11,20 +12,22 @@ import {
 
 const Index = () => {
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen relative">
-      <div className="absolute top-4 right-4">
-        <WalletConnect />
-      </div>
-      
-      <div className="max-w-2xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-6xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
-            Solana Token Creator
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Create your own SPL token on Solana blockchain at just 0.03 SOL
-          </p>
+    <div className="flex min-h-screen w-full">
+      <AppSidebar />
+      <div className="container mx-auto px-4 py-8 min-h-screen relative">
+        <div className="absolute top-4 right-4">
+          <WalletConnect />
         </div>
+        
+        <div className="max-w-2xl mx-auto space-y-8">
+          <div className="text-center space-y-4">
+            <h1 className="text-6xl font-bold bg-gradient-to-r from-solana-purple to-solana-blue bg-clip-text text-transparent">
+              Solana Token Creator
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Create your own SPL token on Solana blockchain at just 0.03 SOL
+            </p>
+          </div>
 
         <div className="glass-card p-6 space-y-6">
           <h2 className="text-2xl font-semibold">How to Use Solana Token Creator</h2>
@@ -121,6 +124,7 @@ const Index = () => {
         <p className="text-center text-sm text-muted-foreground">
           Powered by Solana blockchain
         </p>
+        </div>
       </div>
     </div>
   );
