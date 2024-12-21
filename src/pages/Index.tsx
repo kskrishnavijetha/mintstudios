@@ -18,7 +18,7 @@ const Index = () => {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="container mx-auto px-4 py-8 min-h-screen relative">
-          <div className="flex items-center justify-between gap-4 absolute top-4 right-4">
+          <div className="flex items-center justify-between absolute top-4 w-full">
             <a
               href="https://x.com/Mintstudioio"
               target="_blank"
