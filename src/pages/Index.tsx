@@ -4,7 +4,6 @@ import TokenCreationForm from "@/components/TokenCreationForm";
 import WalletConnect from "@/components/WalletConnect";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Twitter } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -18,16 +17,7 @@ const Index = () => {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="container mx-auto px-4 py-8 min-h-screen relative">
-          <div className="flex items-center justify-between absolute top-4 w-full">
-            <a
-              href="https://x.com/Mintstudioio"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border hover:bg-accent transition-colors"
-            >
-              <Twitter className="h-4 w-4" />
-              <span className="text-sm">Follow us</span>
-            </a>
+          <div className="absolute top-4 right-4">
             <WalletConnect />
           </div>
           
