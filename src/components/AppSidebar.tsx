@@ -1,4 +1,4 @@
-import { Home, Settings, HelpCircle, Telegram } from "lucide-react";
+import { Home, Settings, HelpCircle, MessageCircle } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 
 const XIcon = () => (
@@ -66,7 +66,7 @@ export const AppSidebar = () => {
                 target="_blank" 
                 rel="noopener noreferrer"
               >
-                <Telegram className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4" />
                 <span>Join Telegram</span>
               </a>
             </SidebarMenuButton>
