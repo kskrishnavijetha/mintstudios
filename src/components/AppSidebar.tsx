@@ -17,7 +17,7 @@ export const AppSidebar = () => {
       <SidebarContent>
         <div className="flex items-center gap-3 mb-8 px-2">
           <img 
-            src="/lovable-uploads/ecff42f8-bf0a-4321-a99d-7233333a68ac.png" 
+            src="/lovable-uploads/acb1e506-2586-4d71-8a67-70c91da70dc8.png" 
             alt="MintStudio Logo" 
             className="h-10 w-10 object-contain"
           />
