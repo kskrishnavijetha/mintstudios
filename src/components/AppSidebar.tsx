@@ -11,6 +11,14 @@ const XIcon = () => (
   </svg>
 );
 
+const TelegramIcon = () => (
+  <img 
+    src="/lovable-uploads/879d3949-2004-4922-a392-1a4272ad8bf4.png" 
+    alt="Telegram"
+    className="h-4 w-4"
+  />
+);
+
 export const AppSidebar = () => {
   return (
     <Sidebar>
@@ -66,7 +74,7 @@ export const AppSidebar = () => {
                 target="_blank" 
                 rel="noopener noreferrer"
               >
-                <MessageCircle className="h-4 w-4" />
+                <TelegramIcon />
                 <span>Join Telegram</span>
               </a>
             </SidebarMenuButton>
