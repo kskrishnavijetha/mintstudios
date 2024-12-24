@@ -52,13 +52,12 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      // Use a more reliable RPC endpoint with higher rate limits
+      // Use mainnet RPC endpoint with proper formatting
       const connection = new Connection(
-        "https://solana-mainnet.g.alchemy.com/v2/your-api-key",
+        `https://api.${NETWORK}.solana.com`, 
         {
           commitment: "confirmed",
-          confirmTransactionInitialTimeout: 120000,
-          wsEndpoint: "wss://solana-mainnet.g.alchemy.com/v2/your-api-key"
+          confirmTransactionInitialTimeout: 60000,
         }
       );
 
@@ -71,30 +70,8 @@ const TokenCreationForm = () => {
       );
 
       try {
-        // Get latest blockhash with retry mechanism
-        let blockhash;
-        let lastValidBlockHeight;
-        let retries = 3;
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
         
-        while (retries > 0) {
-          try {
-            const { blockhash: newBlockhash, lastValidBlockHeight: newLastValidBlockHeight } = 
-              await connection.getLatestBlockhash('finalized');
-            blockhash = newBlockhash;
-            lastValidBlockHeight = newLastValidBlockHeight;
-            break;
-          } catch (error) {
-            console.error(`Retry ${4 - retries} failed:`, error);
-            retries--;
-            if (retries === 0) throw error;
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        }
-
-        if (!blockhash || !lastValidBlockHeight) {
-          throw new Error("Failed to get blockhash after multiple retries");
-        }
-
         transaction.recentBlockhash = blockhash;
         transaction.lastValidBlockHeight = lastValidBlockHeight;
         transaction.feePayer = publicKey;
