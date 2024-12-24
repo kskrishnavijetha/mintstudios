@@ -12,8 +12,9 @@ import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
 import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
+import FeeCollector from "./FeeCollector";
 import { NETWORK } from "@/utils/token";
-import { createToken, payFee } from "@/utils/tokenCreation";
+import { createToken } from "@/utils/tokenCreation";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -72,13 +73,6 @@ const TokenCreationForm = () => {
         supply: Number(formData.supply) * Math.pow(10, Number(formData.decimals)),
         decimals: Number(formData.decimals)
       });
-
-      // Pay fee
-      const confirmation = await payFee(connection, signer);
-
-      if (confirmation.value.err) {
-        throw new Error("Transaction failed to confirm");
-      }
 
       toast({
         title: "Token Created Successfully",
@@ -139,16 +133,10 @@ const TokenCreationForm = () => {
 
         <SocialLinks formData={formData} setFormData={setFormData} />
 
-        <Button className="w-full" type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Token...
-            </>
-          ) : (
-            "Create Token (Fee: 0.03 SOL)"
-          )}
-        </Button>
+        <FeeCollector
+          buttonText={isLoading ? "Creating Token..." : "Create Token (Fee: 0.03 SOL)"}
+          disabled={isLoading}
+        />
       </form>
 
       <div className="space-y-4 pt-6 border-t">
