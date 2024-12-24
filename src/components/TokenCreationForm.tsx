@@ -64,13 +64,17 @@ const TokenCreationForm = () => {
       // Create a temporary keypair for the mint
       const mintKeypair = Keypair.generate();
 
+      // Create a signer object that matches the expected interface
+      const signer = {
+        publicKey,
+        secretKey: null,
+        signTransaction: signTransaction
+      };
+
       // Create the token mint
       const mint = await createMint(
         connection,
-        {
-          publicKey,
-          signTransaction
-        },
+        signer,
         publicKey,
         publicKey,
         Number(formData.decimals),
@@ -80,10 +84,7 @@ const TokenCreationForm = () => {
       // Get the token account of the wallet address
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        {
-          publicKey,
-          signTransaction
-        },
+        signer,
         mint,
         publicKey
       );
@@ -91,10 +92,7 @@ const TokenCreationForm = () => {
       // Mint tokens to the token account
       await mintTo(
         connection,
-        {
-          publicKey,
-          signTransaction
-        },
+        signer,
         mint,
         tokenAccount.address,
         publicKey,

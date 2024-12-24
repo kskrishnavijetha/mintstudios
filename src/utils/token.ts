@@ -1,7 +1,9 @@
 import { Buffer } from 'buffer';
 
 // Polyfill Buffer for the browser environment
-window.Buffer = Buffer;
+if (typeof window !== 'undefined') {
+  window.Buffer = Buffer;
+}
 
 export const NETWORK = "mainnet-beta";
 export const FEE_RECEIVER = "7ncEMe17aMHcn87SrVHHUprwE7N455tysFCjhSjoFaRk";
