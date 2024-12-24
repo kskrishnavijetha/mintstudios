@@ -19,7 +19,7 @@ const WalletConnect = () => {
             toast({
               variant: "destructive",
               title: "Network Mismatch",
-              description: "Please switch your wallet network to devnet to continue.",
+              description: "Please switch your wallet network to devnet in your Phantom wallet settings.",
             });
           }
         } catch (error) {
