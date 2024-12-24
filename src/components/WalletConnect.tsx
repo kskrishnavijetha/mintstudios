@@ -1,9 +1,21 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const WalletConnect = () => {
-  const { connected } = useWallet();
+  const { connected, wallet } = useWallet();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (wallet?.adapter.network !== 'devnet' && connected) {
+      toast({
+        variant: "destructive",
+        title: "Network Mismatch",
+        description: "Please switch your wallet network to devnet to continue.",
+      });
+    }
+  }, [wallet?.adapter.network, connected, toast]);
 
   return (
     <div className="relative">
