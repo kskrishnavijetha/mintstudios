@@ -1,19 +1,16 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, Transaction, SystemProgram, Keypair, clusterApiUrl } from "@solana/web3.js";
-import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
+import { Connection, clusterApiUrl } from "@solana/web3.js";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
 import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
-import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
+import { NETWORK } from "@/utils/token";
+import { createToken, payFee } from "@/utils/tokenCreation";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -32,12 +29,6 @@ const TokenCreationForm = () => {
     image: null as File | null,
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, image: e.target.files[0] });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -53,93 +44,28 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      // Use a more reliable RPC endpoint with better configuration
-      const connection = new Connection(
-        clusterApiUrl(NETWORK),
-        {
-          commitment: "confirmed",
-          confirmTransactionInitialTimeout: 120000, // Increased timeout
-          wsEndpoint: "wss://api.mainnet-beta.solana.com/", // Added WebSocket endpoint
-        }
-      );
+      const connection = new Connection(clusterApiUrl(NETWORK), {
+        commitment: "confirmed",
+        confirmTransactionInitialTimeout: 120000,
+        wsEndpoint: "wss://api.mainnet-beta.solana.com/",
+      });
 
-      // Create a temporary keypair for the mint
-      const mintKeypair = Keypair.generate();
-
-      // Create a signer object
       const signer = {
         publicKey,
         secretKey: null,
-        signTransaction: signTransaction
+        signTransaction
       };
 
-      // Get the latest blockhash with retry mechanism
-      const getLatestBlockhash = async (retries = 3) => {
-        for (let i = 0; i < retries; i++) {
-          try {
-            return await connection.getLatestBlockhash('confirmed');
-          } catch (error) {
-            if (i === retries - 1) throw error;
-            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
-          }
-        }
-        throw new Error('Failed to get recent blockhash after retries');
-      };
-
-      // Create the token mint
-      const mint = await createMint(
+      // Create token
+      const mint = await createToken({
         connection,
         signer,
-        publicKey,
-        publicKey,
-        Number(formData.decimals),
-        mintKeypair
-      );
-
-      // Get the token account
-      const tokenAccount = await getOrCreateAssociatedTokenAccount(
-        connection,
-        signer,
-        mint,
-        publicKey
-      );
-
-      // Mint tokens
-      await mintTo(
-        connection,
-        signer,
-        mint,
-        tokenAccount.address,
-        publicKey,
-        Number(formData.supply) * Math.pow(10, Number(formData.decimals))
-      );
-
-      // Pay the fee with retry mechanism
-      const { blockhash, lastValidBlockHeight } = await getLatestBlockhash();
-      
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: new PublicKey(FEE_RECEIVER),
-          lamports: FEE_AMOUNT,
-        })
-      );
-
-      transaction.recentBlockhash = blockhash;
-      transaction.lastValidBlockHeight = lastValidBlockHeight;
-      transaction.feePayer = publicKey;
-
-      const signedTx = await signTransaction(transaction);
-      const txid = await connection.sendRawTransaction(signedTx.serialize(), {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
+        supply: Number(formData.supply) * Math.pow(10, Number(formData.decimals)),
+        decimals: Number(formData.decimals)
       });
-      
-      const confirmation = await connection.confirmTransaction({
-        signature: txid,
-        blockhash: blockhash,
-        lastValidBlockHeight: lastValidBlockHeight,
-      });
+
+      // Pay fee
+      const confirmation = await payFee(connection, signer);
 
       if (confirmation.value.err) {
         throw new Error("Transaction failed to confirm");
