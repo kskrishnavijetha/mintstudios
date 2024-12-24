@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, SystemProgram, clusterApiUrl } from "@solana/web3.js";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
@@ -52,7 +52,15 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      const connection = new Connection(`https://api.${NETWORK}.solana.com`);
+      // Use direct RPC endpoint instead of clusterApiUrl
+      const connection = new Connection(
+        "https://api.mainnet-beta.solana.com",
+        {
+          commitment: "confirmed",
+          confirmTransactionInitialTimeout: 60000
+        }
+      );
+
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -61,27 +69,38 @@ const TokenCreationForm = () => {
         })
       );
 
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
+      try {
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.lastValidBlockHeight = lastValidBlockHeight;
+        transaction.feePayer = publicKey;
 
-      const signature = await sendTransaction(transaction, connection);
-      const confirmation = await connection.confirmTransaction(signature);
+        const signature = await sendTransaction(transaction, connection);
+        
+        const confirmation = await connection.confirmTransaction({
+          signature,
+          blockhash,
+          lastValidBlockHeight
+        });
 
-      if (confirmation.value.err) {
-        throw new Error("Transaction failed");
+        if (confirmation.value.err) {
+          throw new Error("Transaction failed to confirm");
+        }
+
+        toast({
+          title: "Token Creation Initiated",
+          description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
+        });
+      } catch (error: any) {
+        throw new Error(`Transaction failed: ${error.message}`);
       }
 
-      toast({
-        title: "Token Creation Initiated",
-        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
-      });
-
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error details:", error);
       toast({
         variant: "destructive",
         title: "Error creating token",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description: error instanceof Error ? error.message : "Failed to process transaction. Please try again.",
       });
     } finally {
       setIsLoading(false);
