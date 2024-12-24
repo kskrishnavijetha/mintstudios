@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, SystemProgram, Keypair } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
@@ -17,7 +17,7 @@ import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -41,7 +41,7 @@ const TokenCreationForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!publicKey) {
+    if (!publicKey || !signTransaction) {
       toast({
         variant: "destructive",
         title: "Wallet not connected",
@@ -61,19 +61,29 @@ const TokenCreationForm = () => {
         }
       );
 
+      // Create a temporary keypair for the mint
+      const mintKeypair = Keypair.generate();
+
       // Create the token mint
       const mint = await createMint(
         connection,
+        {
+          publicKey,
+          signTransaction
+        },
         publicKey,
         publicKey,
-        publicKey,
-        Number(formData.decimals)
+        Number(formData.decimals),
+        mintKeypair
       );
 
       // Get the token account of the wallet address
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        publicKey,
+        {
+          publicKey,
+          signTransaction
+        },
         mint,
         publicKey
       );
@@ -81,7 +91,10 @@ const TokenCreationForm = () => {
       // Mint tokens to the token account
       await mintTo(
         connection,
-        publicKey,
+        {
+          publicKey,
+          signTransaction
+        },
         mint,
         tokenAccount.address,
         publicKey,
@@ -102,9 +115,10 @@ const TokenCreationForm = () => {
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = publicKey;
 
-        const signature = await sendTransaction(transaction, connection);
+        const signature = await signTransaction(transaction);
+        const txid = await connection.sendRawTransaction(signature.serialize());
         
-        const confirmation = await connection.confirmTransaction(signature);
+        const confirmation = await connection.confirmTransaction(txid);
 
         if (confirmation.value.err) {
           throw new Error("Transaction failed to confirm");
