@@ -2,24 +2,34 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 
 const WalletConnect = () => {
   const { connected, wallet } = useWallet();
   const { toast } = useToast();
 
   useEffect(() => {
-    const isDevnet = wallet?.adapter.name && 
-      window?.solana?.isPhantom;
+    const checkNetwork = async () => {
+      if (connected && wallet?.adapter.publicKey) {
+        try {
+          // @ts-ignore
+          const network = window?.solana?.networkVersion;
+          const isDevnet = network === 'devnet';
+          
+          if (isDevnet) {
+            toast({
+              variant: "destructive",
+              title: "Network Mismatch",
+              description: "Please switch your wallet network to mainnet to continue.",
+            });
+          }
+        } catch (error) {
+          console.error("Error checking network:", error);
+        }
+      }
+    };
 
-    if (isDevnet && connected) {
-      toast({
-        variant: "destructive",
-        title: "Network Mismatch",
-        description: "Please switch your wallet network to mainnet to continue.",
-      });
-    }
-  }, [wallet?.adapter.name, connected, toast]);
+    checkNetwork();
+  }, [wallet?.adapter.publicKey, connected, toast]);
 
   return (
     <div className="relative">
