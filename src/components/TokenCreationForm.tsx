@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, Transaction, SystemProgram, clusterApiUrl } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
@@ -52,12 +52,13 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      // Use direct RPC endpoint instead of clusterApiUrl
+      // Use a more reliable RPC endpoint with higher rate limits
       const connection = new Connection(
-        "https://api.mainnet-beta.solana.com",
+        "https://solana-mainnet.g.alchemy.com/v2/your-api-key",
         {
           commitment: "confirmed",
-          confirmTransactionInitialTimeout: 60000
+          confirmTransactionInitialTimeout: 120000,
+          wsEndpoint: "wss://solana-mainnet.g.alchemy.com/v2/your-api-key"
         }
       );
 
@@ -70,7 +71,30 @@ const TokenCreationForm = () => {
       );
 
       try {
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+        // Get latest blockhash with retry mechanism
+        let blockhash;
+        let lastValidBlockHeight;
+        let retries = 3;
+        
+        while (retries > 0) {
+          try {
+            const { blockhash: newBlockhash, lastValidBlockHeight: newLastValidBlockHeight } = 
+              await connection.getLatestBlockhash('finalized');
+            blockhash = newBlockhash;
+            lastValidBlockHeight = newLastValidBlockHeight;
+            break;
+          } catch (error) {
+            console.error(`Retry ${4 - retries} failed:`, error);
+            retries--;
+            if (retries === 0) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+
+        if (!blockhash || !lastValidBlockHeight) {
+          throw new Error("Failed to get blockhash after multiple retries");
+        }
+
         transaction.recentBlockhash = blockhash;
         transaction.lastValidBlockHeight = lastValidBlockHeight;
         transaction.feePayer = publicKey;
@@ -92,6 +116,7 @@ const TokenCreationForm = () => {
           description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
         });
       } catch (error: any) {
+        console.error("Transaction error:", error);
         throw new Error(`Transaction failed: ${error.message}`);
       }
 
