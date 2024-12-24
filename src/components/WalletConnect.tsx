@@ -13,13 +13,13 @@ const WalletConnect = () => {
         try {
           // @ts-ignore
           const network = window?.solana?.networkVersion;
-          const isDevnet = network === 'devnet';
+          const isMainnet = network === 'mainnet-beta';
           
-          if (isDevnet) {
+          if (isMainnet) {
             toast({
               variant: "destructive",
               title: "Network Mismatch",
-              description: "Please switch your wallet network to mainnet to continue.",
+              description: "Please switch your wallet network to devnet to continue.",
             });
           }
         } catch (error) {

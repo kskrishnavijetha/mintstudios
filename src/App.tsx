@@ -9,7 +9,6 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl, Cluster } from '@solana/web3.js';
 import { useMemo } from 'react';
-import { useToast } from "@/hooks/use-toast";
 
 // Import the styles directly
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -17,7 +16,8 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 const queryClient = new QueryClient();
 
 const App = () => {
-  const network = 'mainnet-beta' as Cluster;
+  // Change network to devnet
+  const network = 'devnet' as Cluster;
   const endpoint = useMemo(() => clusterApiUrl(network), []);
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
