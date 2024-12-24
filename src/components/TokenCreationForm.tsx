@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
@@ -52,7 +53,6 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      // Use a reliable public RPC endpoint
       const connection = new Connection(
         "https://api.mainnet-beta.solana.com",
         {
@@ -61,6 +61,34 @@ const TokenCreationForm = () => {
         }
       );
 
+      // Create the token mint
+      const mint = await createMint(
+        connection,
+        publicKey,
+        publicKey,
+        publicKey,
+        Number(formData.decimals)
+      );
+
+      // Get the token account of the wallet address
+      const tokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        publicKey,
+        mint,
+        publicKey
+      );
+
+      // Mint tokens to the token account
+      await mintTo(
+        connection,
+        publicKey,
+        mint,
+        tokenAccount.address,
+        publicKey,
+        Number(formData.supply) * Math.pow(10, Number(formData.decimals))
+      );
+
+      // Pay the fee
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -83,8 +111,8 @@ const TokenCreationForm = () => {
         }
 
         toast({
-          title: "Token Creation Initiated",
-          description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
+          title: "Token Created Successfully",
+          description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}. Mint address: ${mint.toBase58()}`,
         });
       } catch (error: any) {
         console.error("Transaction error:", error);
