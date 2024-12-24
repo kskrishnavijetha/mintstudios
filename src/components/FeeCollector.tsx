@@ -11,12 +11,14 @@ interface FeeCollectorProps {
   onSuccess?: () => void;
   buttonText?: string;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  disabled?: boolean;
 }
 
 const FeeCollector = ({ 
   onSuccess, 
   buttonText = "Pay Fee (0.03 SOL)",
-  variant = "default"
+  variant = "default",
+  disabled = false
 }: FeeCollectorProps) => {
   const { publicKey, signTransaction } = useWallet();
   const { toast } = useToast();
@@ -67,7 +69,7 @@ const FeeCollector = ({
   return (
     <Button
       onClick={handleFeeCollection}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       variant={variant}
       className="w-full"
     >
