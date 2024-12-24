@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, Transaction, SystemProgram, Keypair } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, SystemProgram, Keypair, clusterApiUrl } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
@@ -53,22 +53,37 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
+      // Use a more reliable RPC endpoint with better configuration
       const connection = new Connection(
-        "https://api.mainnet-beta.solana.com",
+        clusterApiUrl(NETWORK),
         {
           commitment: "confirmed",
-          confirmTransactionInitialTimeout: 60000,
+          confirmTransactionInitialTimeout: 120000, // Increased timeout
+          wsEndpoint: "wss://api.mainnet-beta.solana.com/", // Added WebSocket endpoint
         }
       );
 
       // Create a temporary keypair for the mint
       const mintKeypair = Keypair.generate();
 
-      // Create a signer object that matches the expected interface
+      // Create a signer object
       const signer = {
         publicKey,
         secretKey: null,
         signTransaction: signTransaction
+      };
+
+      // Get the latest blockhash with retry mechanism
+      const getLatestBlockhash = async (retries = 3) => {
+        for (let i = 0; i < retries; i++) {
+          try {
+            return await connection.getLatestBlockhash('confirmed');
+          } catch (error) {
+            if (i === retries - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+          }
+        }
+        throw new Error('Failed to get recent blockhash after retries');
       };
 
       // Create the token mint
@@ -81,7 +96,7 @@ const TokenCreationForm = () => {
         mintKeypair
       );
 
-      // Get the token account of the wallet address
+      // Get the token account
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
         signer,
@@ -89,7 +104,7 @@ const TokenCreationForm = () => {
         publicKey
       );
 
-      // Mint tokens to the token account
+      // Mint tokens
       await mintTo(
         connection,
         signer,
@@ -99,7 +114,9 @@ const TokenCreationForm = () => {
         Number(formData.supply) * Math.pow(10, Number(formData.decimals))
       );
 
-      // Pay the fee
+      // Pay the fee with retry mechanism
+      const { blockhash, lastValidBlockHeight } = await getLatestBlockhash();
+      
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -108,32 +125,30 @@ const TokenCreationForm = () => {
         })
       );
 
-      try {
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = publicKey;
+      transaction.recentBlockhash = blockhash;
+      transaction.lastValidBlockHeight = lastValidBlockHeight;
+      transaction.feePayer = publicKey;
 
-        const signature = await signTransaction(transaction);
-        const txid = await connection.sendRawTransaction(signature.serialize());
-        
-        const confirmation = await connection.confirmTransaction(txid);
+      const signedTx = await signTransaction(transaction);
+      const txid = await connection.sendRawTransaction(signedTx.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
+      
+      const confirmation = await connection.confirmTransaction({
+        signature: txid,
+        blockhash: blockhash,
+        lastValidBlockHeight: lastValidBlockHeight,
+      });
 
-        if (confirmation.value.err) {
-          throw new Error("Transaction failed to confirm");
-        }
-
-        toast({
-          title: "Token Created Successfully",
-          description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}. Mint address: ${mint.toBase58()}`,
-        });
-      } catch (error: any) {
-        console.error("Transaction error:", error);
-        toast({
-          variant: "destructive",
-          title: "Transaction Failed",
-          description: error.message || "Failed to process transaction",
-        });
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed to confirm");
       }
+
+      toast({
+        title: "Token Created Successfully",
+        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}. Mint address: ${mint.toBase58()}`,
+      });
 
     } catch (error: any) {
       console.error("Error details:", error);
