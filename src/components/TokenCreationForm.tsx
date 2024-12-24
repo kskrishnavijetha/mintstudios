@@ -52,9 +52,9 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      // Use mainnet RPC endpoint with proper formatting
+      // Use a reliable public RPC endpoint
       const connection = new Connection(
-        `https://api.${NETWORK}.solana.com`, 
+        "https://api.mainnet-beta.solana.com",
         {
           commitment: "confirmed",
           confirmTransactionInitialTimeout: 60000,
@@ -70,19 +70,13 @@ const TokenCreationForm = () => {
       );
 
       try {
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
-        
+        const { blockhash } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
-        transaction.lastValidBlockHeight = lastValidBlockHeight;
         transaction.feePayer = publicKey;
 
         const signature = await sendTransaction(transaction, connection);
         
-        const confirmation = await connection.confirmTransaction({
-          signature,
-          blockhash,
-          lastValidBlockHeight
-        });
+        const confirmation = await connection.confirmTransaction(signature);
 
         if (confirmation.value.err) {
           throw new Error("Transaction failed to confirm");
@@ -94,7 +88,11 @@ const TokenCreationForm = () => {
         });
       } catch (error: any) {
         console.error("Transaction error:", error);
-        throw new Error(`Transaction failed: ${error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Transaction Failed",
+          description: error.message || "Failed to process transaction",
+        });
       }
 
     } catch (error: any) {
@@ -102,7 +100,7 @@ const TokenCreationForm = () => {
       toast({
         variant: "destructive",
         title: "Error creating token",
-        description: error instanceof Error ? error.message : "Failed to process transaction. Please try again.",
+        description: error.message || "Failed to process transaction. Please try again.",
       });
     } finally {
       setIsLoading(false);
