@@ -9,14 +9,14 @@ const WalletConnect = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const isMainnet = wallet?.adapter.name && 
-      !window?.solana?.isPhantom;
+    const isDevnet = wallet?.adapter.name && 
+      window?.solana?.isPhantom;
 
-    if (isMainnet && connected) {
+    if (isDevnet && connected) {
       toast({
         variant: "destructive",
         title: "Network Mismatch",
-        description: "Please switch your wallet network to devnet to continue.",
+        description: "Please switch your wallet network to mainnet to continue.",
       });
     }
   }, [wallet?.adapter.name, connected, toast]);
