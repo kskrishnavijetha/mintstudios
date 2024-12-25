@@ -37,9 +37,10 @@ const FeeCollector = ({
     setIsLoading(true);
 
     try {
-      const connection = new Connection(clusterApiUrl(NETWORK), {
+      const connection = new Connection("https://api.mainnet-beta.solana.com", {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 120000,
+        wsEndpoint: "wss://api.mainnet-beta.solana.com/",
       });
 
       const confirmation = await collectFee(connection, publicKey, signTransaction);
