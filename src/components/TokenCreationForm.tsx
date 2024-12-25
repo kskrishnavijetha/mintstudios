@@ -7,7 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
-import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { 
+  createMint,
+  getAssociatedTokenAddress,
+  createAssociatedTokenAccount,
+  mintTo,
+  TOKEN_PROGRAM_ID 
+} from "@solana/spl-token";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
@@ -72,24 +78,48 @@ const TokenCreationForm = () => {
       const feeSignature = await sendTransaction(feeTransaction, connection);
       await connection.confirmTransaction(feeSignature);
 
-      // Create and mint token
-      const mintAccount = await Token.createMint(
+      // Create mint account
+      const mintAccount = await createMint(
         connection,
-        publicKey,
+        {
+          publicKey: publicKey,
+          secretKey: new Uint8Array(0), // This will be signed by the wallet adapter
+        },
         publicKey,
         publicKey,
         Number(formData.decimals),
+        undefined,
+        undefined,
         TOKEN_PROGRAM_ID
       );
 
-      // Create associated token account
-      const tokenAccount = await mintAccount.createAssociatedTokenAccount(publicKey);
+      // Get associated token account address
+      const associatedTokenAddress = await getAssociatedTokenAddress(
+        mintAccount,
+        publicKey
+      );
+
+      // Create associated token account if it doesn't exist
+      await createAssociatedTokenAccount(
+        connection,
+        {
+          publicKey: publicKey,
+          secretKey: new Uint8Array(0), // This will be signed by the wallet adapter
+        },
+        mintAccount,
+        publicKey
+      );
 
       // Mint tokens
-      await mintAccount.mintTo(
-        tokenAccount,
+      await mintTo(
+        connection,
+        {
+          publicKey: publicKey,
+          secretKey: new Uint8Array(0), // This will be signed by the wallet adapter
+        },
+        mintAccount,
+        associatedTokenAddress,
         publicKey,
-        [],
         Number(formData.supply) * Math.pow(10, Number(formData.decimals))
       );
 
