@@ -1,7 +1,5 @@
 import { Buffer } from 'buffer';
-
-// Initialize Buffer globally for Solana operations
-window.Buffer = Buffer;
+globalThis.Buffer = Buffer;
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
