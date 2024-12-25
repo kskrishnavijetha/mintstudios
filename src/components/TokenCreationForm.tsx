@@ -6,20 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
-import { 
-  createMint,
-  getAssociatedTokenAddress,
-  createAssociatedTokenAccount,
-  mintTo,
-  TOKEN_PROGRAM_ID 
-} from "@solana/spl-token";
+import { Connection } from "@solana/web3.js";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
 import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
-import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
+import { NETWORK } from "@/utils/token";
+import { createToken } from "@/utils/tokenCreation";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
@@ -59,69 +53,12 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      const connection = new Connection(`https://api.${NETWORK}.solana.com`);
+      const connection = new Connection(`https://api.${NETWORK}.solana.com`, {
+        commitment: 'confirmed',
+        confirmTransactionInitialTimeout: 60000, // 60 seconds timeout
+      });
       
-      // Create fee payment transaction
-      const feeTransaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: new PublicKey(FEE_RECEIVER),
-          lamports: FEE_AMOUNT,
-        })
-      );
-
-      const { blockhash } = await connection.getLatestBlockhash();
-      feeTransaction.recentBlockhash = blockhash;
-      feeTransaction.feePayer = publicKey;
-
-      // Send fee transaction
-      const feeSignature = await sendTransaction(feeTransaction, connection);
-      await connection.confirmTransaction(feeSignature);
-
-      // Create mint account
-      const mintAccount = await createMint(
-        connection,
-        {
-          publicKey: publicKey,
-          secretKey: new Uint8Array(0), // This will be signed by the wallet adapter
-        },
-        publicKey,
-        publicKey,
-        Number(formData.decimals),
-        undefined,
-        undefined,
-        TOKEN_PROGRAM_ID
-      );
-
-      // Get associated token account address
-      const associatedTokenAddress = await getAssociatedTokenAddress(
-        mintAccount,
-        publicKey
-      );
-
-      // Create associated token account if it doesn't exist
-      await createAssociatedTokenAccount(
-        connection,
-        {
-          publicKey: publicKey,
-          secretKey: new Uint8Array(0), // This will be signed by the wallet adapter
-        },
-        mintAccount,
-        publicKey
-      );
-
-      // Mint tokens
-      await mintTo(
-        connection,
-        {
-          publicKey: publicKey,
-          secretKey: new Uint8Array(0), // This will be signed by the wallet adapter
-        },
-        mintAccount,
-        associatedTokenAddress,
-        publicKey,
-        Number(formData.supply) * Math.pow(10, Number(formData.decimals))
-      );
+      const mintAccount = await createToken(connection, publicKey, sendTransaction, formData);
 
       toast({
         title: "Token Created Successfully",
@@ -133,7 +70,7 @@ const TokenCreationForm = () => {
       toast({
         variant: "destructive",
         title: "Error creating token",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description: "Transaction timed out. Please try again and make sure to approve the transaction promptly.",
       });
     } finally {
       setIsLoading(false);
