@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
@@ -53,7 +54,9 @@ const TokenCreationForm = () => {
 
     try {
       const connection = new Connection(`https://api.${NETWORK}.solana.com`);
-      const transaction = new Transaction().add(
+      
+      // Create fee payment transaction
+      const feeTransaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
           toPubkey: new PublicKey(FEE_RECEIVER),
@@ -62,22 +65,41 @@ const TokenCreationForm = () => {
       );
 
       const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
+      feeTransaction.recentBlockhash = blockhash;
+      feeTransaction.feePayer = publicKey;
 
-      const signature = await sendTransaction(transaction, connection);
-      const confirmation = await connection.confirmTransaction(signature);
+      // Send fee transaction
+      const feeSignature = await sendTransaction(feeTransaction, connection);
+      await connection.confirmTransaction(feeSignature);
 
-      if (confirmation.value.err) {
-        throw new Error("Transaction failed");
-      }
+      // Create and mint token
+      const mintAccount = await Token.createMint(
+        connection,
+        publicKey,
+        publicKey,
+        publicKey,
+        Number(formData.decimals),
+        TOKEN_PROGRAM_ID
+      );
+
+      // Create associated token account
+      const tokenAccount = await mintAccount.createAssociatedTokenAccount(publicKey);
+
+      // Mint tokens
+      await mintAccount.mintTo(
+        tokenAccount,
+        publicKey,
+        [],
+        Number(formData.supply) * Math.pow(10, Number(formData.decimals))
+      );
 
       toast({
-        title: "Token Creation Initiated",
+        title: "Token Created Successfully",
         description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
       });
 
     } catch (error) {
+      console.error("Token creation error:", error);
       toast({
         variant: "destructive",
         title: "Error creating token",
