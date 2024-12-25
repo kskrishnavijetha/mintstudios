@@ -14,11 +14,6 @@ import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
 import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
 
-// Polyfill Buffer for browser environment
-import { Buffer } from 'buffer';
-// @ts-ignore
-window.Buffer = Buffer;
-
 const TokenCreationForm = () => {
   const { toast } = useToast();
   const { publicKey, sendTransaction } = useWallet();
