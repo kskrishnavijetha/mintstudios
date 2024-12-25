@@ -1,9 +1,9 @@
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import TokenCreationForm from "@/components/TokenCreationForm";
 import WalletConnect from "@/components/WalletConnect";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import SecurityNotice from "@/components/SecurityNotice";
 import {
   Accordion,
   AccordionContent,
@@ -30,8 +30,6 @@ const Index = () => {
                 Create your own SPL token on Solana blockchain at just 0.03 SOL
               </p>
             </div>
-
-            <SecurityNotice />
 
             <div className="glass-card p-6 space-y-6">
               <h2 className="text-2xl font-semibold">How to Use Solana Token Creator</h2>

@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
-import { clusterApiUrl } from '@solana/web3.js';
+import { clusterApiUrl, Cluster, Connection } from '@solana/web3.js';
 import { useMemo } from 'react';
 
 // Import the styles directly
@@ -16,12 +16,15 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 const queryClient = new QueryClient();
 
 const App = () => {
-  const endpoint = useMemo(() => clusterApiUrl('devnet'), []);
+  // Set network to devnet and configure connection
+  const network = 'devnet' as Cluster;
+  const endpoint = useMemo(() => clusterApiUrl(network), []);
+  const connection = useMemo(() => new Connection(endpoint, 'confirmed'), [endpoint]);
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
+      <WalletProvider wallets={wallets} autoConnect={false}>
         <WalletModalProvider>
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>
