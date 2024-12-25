@@ -6,19 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
 import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
-import FeeCollector from "./FeeCollector";
-import { NETWORK } from "@/utils/token";
-import { createToken } from "@/utils/tokenCreation";
+import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -42,7 +40,7 @@ const TokenCreationForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!publicKey || !signTransaction) {
+    if (!publicKey) {
       toast({
         variant: "destructive",
         title: "Wallet not connected",
@@ -54,37 +52,36 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      const connection = new Connection(clusterApiUrl(NETWORK), {
-        commitment: "confirmed",
-        confirmTransactionInitialTimeout: 120000,
-        wsEndpoint: "wss://api.mainnet-beta.solana.com/",
-      });
+      const connection = new Connection(`https://api.${NETWORK}.solana.com`);
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(FEE_RECEIVER),
+          lamports: FEE_AMOUNT,
+        })
+      );
 
-      const signer = {
-        publicKey,
-        secretKey: null,
-        signTransaction
-      };
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
 
-      // Create token
-      const mint = await createToken({
-        connection,
-        signer,
-        supply: Number(formData.supply) * Math.pow(10, Number(formData.decimals)),
-        decimals: Number(formData.decimals)
-      });
+      const signature = await sendTransaction(transaction, connection);
+      const confirmation = await connection.confirmTransaction(signature);
+
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed");
+      }
 
       toast({
-        title: "Token Created Successfully",
-        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}. Mint address: ${mint.toBase58()}`,
+        title: "Token Creation Initiated",
+        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
       });
 
-    } catch (error: any) {
-      console.error("Error details:", error);
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error creating token",
-        description: error.message || "Failed to process transaction. Please try again.",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
       });
     } finally {
       setIsLoading(false);
@@ -133,10 +130,16 @@ const TokenCreationForm = () => {
 
         <SocialLinks formData={formData} setFormData={setFormData} />
 
-        <FeeCollector
-          buttonText={isLoading ? "Creating Token..." : "Create Token (Fee: 0.03 SOL)"}
-          disabled={isLoading}
-        />
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Token...
+            </>
+          ) : (
+            "Create Token (Fee: 0.03 SOL)"
+          )}
+        </Button>
       </form>
 
       <div className="space-y-4 pt-6 border-t">

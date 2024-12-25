@@ -1,4 +1,4 @@
-import { Home, Settings, HelpCircle, MessageCircle } from "lucide-react";
+import { Home, Settings, HelpCircle } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 
 const XIcon = () => (
@@ -11,21 +11,13 @@ const XIcon = () => (
   </svg>
 );
 
-const TelegramIcon = () => (
-  <img 
-    src="/lovable-uploads/879d3949-2004-4922-a392-1a4272ad8bf4.png" 
-    alt="Telegram"
-    className="h-4 w-4"
-  />
-);
-
 export const AppSidebar = () => {
   return (
     <Sidebar>
       <SidebarContent>
         <div className="flex items-center gap-3 mb-8 px-2">
           <img 
-            src="/lovable-uploads/acb1e506-2586-4d71-8a67-70c91da70dc8.png" 
+            src="/lovable-uploads/ecff42f8-bf0a-4321-a99d-7233333a68ac.png" 
             alt="MintStudio Logo" 
             className="h-10 w-10 object-contain"
           />
@@ -64,18 +56,6 @@ export const AppSidebar = () => {
               >
                 <XIcon />
                 <span>Follow us</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a 
-                href="https://t.me/+yl-wMZk6QfQ3MzQ9" 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                <TelegramIcon />
-                <span>Join Telegram</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

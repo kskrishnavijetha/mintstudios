@@ -1,10 +1,8 @@
 import { Buffer } from 'buffer';
 
-// Polyfill Buffer for browser environment
-if (typeof window !== 'undefined') {
-  window.Buffer = Buffer;
-}
+// Polyfill Buffer for the browser environment
+window.Buffer = Buffer;
 
-export const NETWORK = 'mainnet-beta';
-export const FEE_RECEIVER = 'DxMLxKxN3CqPh8Vc3GQqvDn6wkKtYMtEKpM2EZA5HGXS';
-export const FEE_AMOUNT = 30000000; // 0.03 SOL in lamports
+export const NETWORK = "devnet";
+export const FEE_RECEIVER = "64tMohDoBgFNRsm8U4XWbjFuixVs1qPLfmgoD8gR5ijo";
+export const FEE_AMOUNT = 0.03 * 1000000000; // 0.03 SOL in lamports
