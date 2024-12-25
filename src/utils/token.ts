@@ -1,8 +1,9 @@
-import { Buffer } from 'buffer';
+// Network configuration
+export const NETWORK = 'mainnet-beta';
 
-// Polyfill Buffer for the browser environment
-window.Buffer = Buffer;
+// Fee configuration for token creation
+export const FEE_RECEIVER = 'YOUR_FEE_RECEIVER_ADDRESS';
+export const FEE_AMOUNT = 30000000; // 0.03 SOL in lamports
 
-export const NETWORK = "devnet";
-export const FEE_RECEIVER = "64tMohDoBgFNRsm8U4XWbjFuixVs1qPLfmgoD8gR5ijo";
-export const FEE_AMOUNT = 0.03 * 1000000000; // 0.03 SOL in lamports
+// RPC endpoints
+export const RPC_ENDPOINT = 'https://api.mainnet-beta.solana.com';
