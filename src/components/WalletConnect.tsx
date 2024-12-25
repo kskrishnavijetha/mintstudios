@@ -1,35 +1,9 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 const WalletConnect = () => {
-  const { connected, wallet } = useWallet();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const checkNetwork = async () => {
-      if (connected && wallet?.adapter.publicKey) {
-        try {
-          // @ts-ignore
-          const network = window?.solana?.networkVersion;
-          const isMainnet = network === 'mainnet-beta';
-          
-          if (isMainnet) {
-            toast({
-              variant: "destructive",
-              title: "Network Mismatch",
-              description: "Please switch your wallet network to devnet in your Phantom wallet settings.",
-            });
-          }
-        } catch (error) {
-          console.error("Error checking network:", error);
-        }
-      }
-    };
-
-    checkNetwork();
-  }, [wallet?.adapter.publicKey, connected, toast]);
+  const { connected } = useWallet();
 
   return (
     <div className="relative">
