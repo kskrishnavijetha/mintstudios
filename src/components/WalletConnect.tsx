@@ -13,13 +13,13 @@ const WalletConnect = () => {
         try {
           // @ts-ignore
           const network = window?.solana?.networkVersion;
-          const isMainnet = network === 'mainnet-beta';
+          const isDevnet = network === 'devnet';
           
-          if (isMainnet) {
+          if (isDevnet) {
             toast({
               variant: "destructive",
               title: "Network Mismatch",
-              description: "Please switch your wallet network to devnet in your Phantom wallet settings.",
+              description: "Please switch your wallet network to mainnet-beta in your Phantom wallet settings.",
             });
           }
         } catch (error) {
