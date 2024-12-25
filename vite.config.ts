@@ -4,7 +4,6 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -34,5 +33,12 @@ export default defineConfig(({ mode }) => ({
         global: 'globalThis'
       }
     }
-  }
+  },
+  build: {
+    rollupOptions: {
+      treeshake: {
+        annotations: true,
+      },
+    },
+  },
 }));
