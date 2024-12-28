@@ -38,15 +38,11 @@ const FeeCollector = ({
 
     try {
       const connection = new Connection(clusterApiUrl(NETWORK), {
-        commitment: "confirmed",
+        commitment: 'finalized',
         confirmTransactionInitialTimeout: 60000,
       });
 
-      const confirmation = await collectFee(connection, publicKey, signTransaction);
-
-      if (confirmation.value.err) {
-        throw new Error("Transaction failed to confirm");
-      }
+      await collectFee(connection, publicKey, signTransaction);
 
       toast({
         title: "Fee Payment Successful",
@@ -57,19 +53,10 @@ const FeeCollector = ({
     } catch (error: any) {
       console.error("Fee collection error:", error);
       
-      let errorMessage = "Failed to process fee payment. Please try again.";
-      if (error.message?.includes("403")) {
-        errorMessage = "Unauthorized access. Check your API keys or permissions.";
-      } else if (error.message?.includes("blockhash")) {
-        errorMessage = "Network congestion detected. Retrying might resolve the issue.";
-      } else if (error.message?.includes("RPC")) {
-        errorMessage = "Unable to connect to the RPC server. Please check your connection or try again later.";
-      }
-
       toast({
         variant: "destructive",
         title: "Error collecting fee",
-        description: errorMessage,
+        description: error.message || "Failed to process fee payment. Please try again.",
       });
     } finally {
       setIsLoading(false);

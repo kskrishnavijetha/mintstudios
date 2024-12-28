@@ -12,7 +12,7 @@ async function fetchBlockhashWithRetries(connection: Connection, retries = 3) {
       if (attempt >= retries) {
         throw new Error("Failed to fetch blockhash after multiple attempts.");
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
     }
   }
   throw new Error("Failed to fetch blockhash after exhausting all retries.");
@@ -28,16 +28,23 @@ async function collectFeeWithRetries(
     try {
       const txid = await connection.sendRawTransaction(transaction.serialize(), {
         skipPreflight: false,
-        preflightCommitment: 'confirmed',
+        preflightCommitment: 'finalized',
         maxRetries: 5
       });
       
-      return await connection.confirmTransaction({
+      const confirmation = await connection.confirmTransaction({
         signature: txid,
         blockhash: transaction.recentBlockhash!,
         lastValidBlockHeight: transaction.lastValidBlockHeight!
-      }, 'confirmed');
+      }, 'finalized');
+
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed to confirm");
+      }
+
+      return confirmation;
     } catch (error) {
+      console.error(`Attempt ${attempt + 1} failed:`, error);
       lastError = error;
       if (attempt < retries - 1) {
         await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
@@ -55,6 +62,7 @@ export const collectFee = async (
   const MAX_RETRIES = 3;
   
   try {
+    // Create and configure the transaction
     const transaction = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey,
@@ -63,21 +71,25 @@ export const collectFee = async (
       })
     );
 
+    // Get blockhash with retries
     const { blockhash, lastValidBlockHeight } = await fetchBlockhashWithRetries(connection);
     transaction.recentBlockhash = blockhash;
     transaction.lastValidBlockHeight = lastValidBlockHeight;
     transaction.feePayer = fromPubkey;
 
+    // Sign and send transaction with retries
     const signedTx = await signTransaction(transaction);
     return await collectFeeWithRetries(connection, signedTx, MAX_RETRIES);
   } catch (error: any) {
     console.error("Fee collection error details:", error);
-    let errorMessage = "Failed to process fee payment. Please try again.";
     
+    let errorMessage = "Failed to process fee payment. Please try again.";
     if (error.message?.includes("blockhash")) {
       errorMessage = "Network congestion detected. Please try again later.";
     } else if (error.message?.includes("RPC")) {
       errorMessage = "RPC connection error. Please check your network and retry.";
+    } else if (error.message?.includes("insufficient")) {
+      errorMessage = "Insufficient balance to pay the fee. Please add more SOL to your wallet.";
     }
     
     throw new Error(errorMessage);
