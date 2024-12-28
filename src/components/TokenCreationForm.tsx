@@ -6,18 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection } from "@solana/web3.js";
+import { Connection, clusterApiUrl } from "@solana/web3.js";
 import TokenFormFields from "./token/TokenFormFields";
 import SocialLinks from "./token/SocialLinks";
 import OpenbookMarketCreator from "./token/OpenbookMarketCreator";
 import FreezeAuthorityRevoker from "./token/FreezeAuthorityRevoker";
 import MintAuthorityRevoker from "./token/MintAuthorityRevoker";
+import FeeCollector from "./FeeCollector";
 import { NETWORK } from "@/utils/token";
 import { createToken } from "@/utils/tokenCreation";
 
 const TokenCreationForm = () => {
   const { toast } = useToast();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -41,7 +42,7 @@ const TokenCreationForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!publicKey) {
+    if (!publicKey || !signTransaction) {
       toast({
         variant: "destructive",
         title: "Wallet not connected",
@@ -53,24 +54,37 @@ const TokenCreationForm = () => {
     setIsLoading(true);
 
     try {
-      const connection = new Connection(`https://api.${NETWORK}.solana.com`, {
-        commitment: 'confirmed',
-        confirmTransactionInitialTimeout: 60000, // 60 seconds timeout
+      const connection = new Connection(clusterApiUrl(NETWORK), {
+        commitment: "confirmed",
+        confirmTransactionInitialTimeout: 120000,
+        wsEndpoint: "wss://api.mainnet-beta.solana.com/",
       });
-      
-      const mintAccount = await createToken(connection, publicKey, sendTransaction, formData);
+
+      const signer = {
+        publicKey,
+        secretKey: null,
+        signTransaction
+      };
+
+      // Create token
+      const mint = await createToken({
+        connection,
+        signer,
+        supply: Number(formData.supply) * Math.pow(10, Number(formData.decimals)),
+        decimals: Number(formData.decimals)
+      });
 
       toast({
         title: "Token Created Successfully",
-        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}`,
+        description: `Created ${formData.name} (${formData.symbol}) with supply of ${formData.supply}. Mint address: ${mint.toBase58()}`,
       });
 
-    } catch (error) {
-      console.error("Token creation error:", error);
+    } catch (error: any) {
+      console.error("Error details:", error);
       toast({
         variant: "destructive",
         title: "Error creating token",
-        description: "Transaction timed out. Please try again and make sure to approve the transaction promptly.",
+        description: error.message || "Failed to process transaction. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -119,16 +133,10 @@ const TokenCreationForm = () => {
 
         <SocialLinks formData={formData} setFormData={setFormData} />
 
-        <Button className="w-full" type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Token...
-            </>
-          ) : (
-            "Create Token (Fee: 0.03 SOL)"
-          )}
-        </Button>
+        <FeeCollector
+          buttonText={isLoading ? "Creating Token..." : "Create Token (Fee: 0.03 SOL)"}
+          disabled={isLoading}
+        />
       </form>
 
       <div className="space-y-4 pt-6 border-t">

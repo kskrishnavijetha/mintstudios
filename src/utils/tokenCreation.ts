@@ -1,103 +1,90 @@
-import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
-import { 
-  createMint,
-  getAssociatedTokenAddress,
-  createAssociatedTokenAccount,
-  mintTo,
-  TOKEN_PROGRAM_ID 
-} from "@solana/spl-token";
-import { NETWORK, FEE_RECEIVER, FEE_AMOUNT } from "@/utils/token";
+import { Connection, PublicKey, Transaction, SystemProgram, Keypair } from "@solana/web3.js";
+import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
+import { FEE_AMOUNT, FEE_RECEIVER } from "./token";
 
-export const createToken = async (
+export type TokenCreationParams = {
+  connection: Connection;
+  signer: {
+    publicKey: PublicKey;
+    secretKey: null;
+    signTransaction: (transaction: Transaction) => Promise<Transaction>;
+  };
+  supply: number;
+  decimals: number;
+};
+
+export const createToken = async ({
+  connection,
+  signer,
+  supply,
+  decimals
+}: TokenCreationParams) => {
+  // Create a temporary keypair for the mint
+  const mintKeypair = Keypair.generate();
+
+  // Create the token mint
+  const mint = await createMint(
+    connection,
+    signer,
+    signer.publicKey,
+    signer.publicKey,
+    decimals,
+    mintKeypair
+  );
+
+  // Get the token account
+  const tokenAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    signer,
+    mint,
+    signer.publicKey
+  );
+
+  // Mint tokens
+  await mintTo(
+    connection,
+    signer,
+    mint,
+    tokenAccount.address,
+    signer.publicKey,
+    supply
+  );
+
+  return mint;
+};
+
+export const payFee = async (
   connection: Connection,
-  publicKey: PublicKey,
-  sendTransaction: (transaction: Transaction, connection: Connection) => Promise<string>,
-  formData: {
-    decimals: string;
-    supply: string;
+  signer: {
+    publicKey: PublicKey;
+    signTransaction: (transaction: Transaction) => Promise<Transaction>;
   }
 ) => {
-  // Create and send fee transaction
-  const feeTransaction = new Transaction().add(
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+  
+  const transaction = new Transaction().add(
     SystemProgram.transfer({
-      fromPubkey: publicKey,
+      fromPubkey: signer.publicKey,
       toPubkey: new PublicKey(FEE_RECEIVER),
       lamports: FEE_AMOUNT,
     })
   );
 
-  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-  feeTransaction.recentBlockhash = blockhash;
-  feeTransaction.feePayer = publicKey;
+  transaction.recentBlockhash = blockhash;
+  transaction.lastValidBlockHeight = lastValidBlockHeight;
+  transaction.feePayer = signer.publicKey;
 
-  // Send fee transaction with confirmation
-  const feeSignature = await sendTransaction(feeTransaction, connection);
-  const confirmation = await connection.confirmTransaction({
-    signature: feeSignature,
-    blockhash: blockhash,
-    lastValidBlockHeight: lastValidBlockHeight
-  }, 'confirmed');
+  const signedTx = await signer.signTransaction(transaction);
+  
+  const txid = await connection.sendRawTransaction(signedTx.serialize(), {
+    skipPreflight: false,
+    preflightCommitment: 'confirmed',
+    maxRetries: 5
+  });
 
-  if (confirmation.value.err) {
-    throw new Error("Fee transaction failed");
-  }
-
-  // Create mint account with shorter confirmation timeout
-  const mintAccount = await createMint(
-    connection,
-    {
-      publicKey: publicKey,
-      secretKey: new Uint8Array(0),
-    },
-    publicKey,
-    publicKey,
-    Number(formData.decimals),
-    undefined,
-    {
-      commitment: 'confirmed',
-      preflightCommitment: 'confirmed',
-    },
-    TOKEN_PROGRAM_ID
-  );
-
-  // Get associated token account address
-  const associatedTokenAddress = await getAssociatedTokenAddress(
-    mintAccount,
-    publicKey
-  );
-
-  // Create associated token account
-  await createAssociatedTokenAccount(
-    connection,
-    {
-      publicKey: publicKey,
-      secretKey: new Uint8Array(0),
-    },
-    mintAccount,
-    publicKey,
-    {
-      commitment: 'confirmed',
-      preflightCommitment: 'confirmed',
-    }
-  );
-
-  // Mint tokens with shorter confirmation timeout
-  await mintTo(
-    connection,
-    {
-      publicKey: publicKey,
-      secretKey: new Uint8Array(0),
-    },
-    mintAccount,
-    associatedTokenAddress,
-    publicKey,
-    Number(formData.supply) * Math.pow(10, Number(formData.decimals)),
-    [],
-    {
-      commitment: 'confirmed',
-      preflightCommitment: 'confirmed',
-    }
-  );
-
-  return mintAccount;
+  return connection.confirmTransaction({
+    signature: txid,
+    blockhash,
+    lastValidBlockHeight
+  });
 };
