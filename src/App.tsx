@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,9 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl, Cluster, Connection } from '@solana/web3.js';
 import { useMemo } from 'react';
+
+// Set up Buffer for Solana
+window.Buffer = Buffer;
 
 // Import the styles directly
 import '@solana/wallet-adapter-react-ui/styles.css';
