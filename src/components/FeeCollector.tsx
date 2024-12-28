@@ -59,7 +59,7 @@ const FeeCollector = ({
       
       let errorMessage = "Failed to process fee payment. Please try again.";
       if (error.message?.includes("403")) {
-        errorMessage = "RPC connection error. Please try again in a few moments.";
+        errorMessage = "Network connection error. Please try again in a few moments.";
       } else if (error.message?.includes("blockhash")) {
         errorMessage = "Network congestion detected. Please try again.";
       }

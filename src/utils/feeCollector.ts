@@ -15,7 +15,7 @@ export const collectFee = async (
       })
     );
 
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
     transaction.recentBlockhash = blockhash;
     transaction.lastValidBlockHeight = lastValidBlockHeight;
     transaction.feePayer = fromPubkey;
@@ -24,14 +24,14 @@ export const collectFee = async (
     const txid = await connection.sendRawTransaction(signedTx.serialize(), {
       skipPreflight: false,
       preflightCommitment: 'confirmed',
-      maxRetries: 3
+      maxRetries: 5
     });
 
     return await connection.confirmTransaction({
       signature: txid,
       blockhash,
       lastValidBlockHeight
-    });
+    }, 'confirmed');
   } catch (error: any) {
     console.error("Fee collection error details:", error);
     throw error;
