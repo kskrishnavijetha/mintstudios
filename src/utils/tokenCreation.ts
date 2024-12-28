@@ -1,6 +1,6 @@
-import { Connection, PublicKey, Transaction, SystemProgram, Keypair } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, SystemProgram, Keypair, sendAndConfirmTransaction } from "@solana/web3.js";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
-import { FEE_AMOUNT, FEE_RECEIVER } from "./token";
+import { FEE_AMOUNT, FEE_RECEIVER, RPC_ENDPOINTS, RETRY_DELAYS } from "./token";
 
 export type TokenCreationParams = {
   connection: Connection;
@@ -13,16 +13,42 @@ export type TokenCreationParams = {
   decimals: number;
 };
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function getWorkingConnection(): Promise<Connection> {
+  for (const endpoint of RPC_ENDPOINTS) {
+    const connection = new Connection(endpoint, 'confirmed');
+    try {
+      await connection.getVersion();
+      return connection;
+    } catch (error) {
+      console.warn(`RPC endpoint ${endpoint} failed, trying next one...`);
+      continue;
+    }
+  }
+  throw new Error('All RPC endpoints are unavailable');
+}
+
+async function getLatestBlockhashWithRetry(connection: Connection): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
+  for (const delay of RETRY_DELAYS) {
+    try {
+      return await connection.getLatestBlockhash('finalized');
+    } catch (error) {
+      console.warn(`Failed to get blockhash, retrying in ${delay}ms...`);
+      await sleep(delay);
+    }
+  }
+  throw new Error('Failed to get latest blockhash after multiple retries');
+}
+
 export const createToken = async ({
   connection,
   signer,
   supply,
   decimals
 }: TokenCreationParams) => {
-  // Create a temporary keypair for the mint
   const mintKeypair = Keypair.generate();
 
-  // Create the token mint
   const mint = await createMint(
     connection,
     signer,
@@ -32,7 +58,6 @@ export const createToken = async ({
     mintKeypair
   );
 
-  // Get the token account
   const tokenAccount = await getOrCreateAssociatedTokenAccount(
     connection,
     signer,
@@ -40,7 +65,6 @@ export const createToken = async ({
     signer.publicKey
   );
 
-  // Mint tokens
   await mintTo(
     connection,
     signer,
@@ -60,7 +84,11 @@ export const payFee = async (
     signTransaction: (transaction: Transaction) => Promise<Transaction>;
   }
 ) => {
-  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+  // Get a working connection from the pool of endpoints
+  const workingConnection = await getWorkingConnection();
+  
+  // Get latest blockhash with retry mechanism
+  const { blockhash, lastValidBlockHeight } = await getLatestBlockhashWithRetry(workingConnection);
   
   const transaction = new Transaction().add(
     SystemProgram.transfer({
@@ -74,17 +102,32 @@ export const payFee = async (
   transaction.lastValidBlockHeight = lastValidBlockHeight;
   transaction.feePayer = signer.publicKey;
 
-  const signedTx = await signer.signTransaction(transaction);
-  
-  const txid = await connection.sendRawTransaction(signedTx.serialize(), {
-    skipPreflight: false,
-    preflightCommitment: 'confirmed',
-    maxRetries: 5
-  });
+  // Sign and send transaction with retries
+  for (const delay of RETRY_DELAYS) {
+    try {
+      const signedTx = await signer.signTransaction(transaction);
+      const txid = await workingConnection.sendRawTransaction(signedTx.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 5
+      });
 
-  return connection.confirmTransaction({
-    signature: txid,
-    blockhash,
-    lastValidBlockHeight
-  });
+      const confirmation = await workingConnection.confirmTransaction({
+        signature: txid,
+        blockhash,
+        lastValidBlockHeight
+      }, 'confirmed');
+
+      if (confirmation.value.err) {
+        throw new Error('Transaction failed to confirm');
+      }
+
+      return confirmation;
+    } catch (error) {
+      console.warn(`Transaction failed, retrying in ${delay}ms...`);
+      await sleep(delay);
+    }
+  }
+
+  throw new Error('Failed to complete transaction after multiple retries');
 };
