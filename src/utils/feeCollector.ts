@@ -1,6 +1,23 @@
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import { FEE_RECEIVER, FEE_AMOUNT } from "./token";
 
+async function fetchBlockhashWithRetries(connection: Connection, retries = 3) {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
+      return { blockhash, lastValidBlockHeight };
+    } catch (err) {
+      attempt++;
+      if (attempt >= retries) {
+        throw new Error("Failed to fetch blockhash after multiple attempts.");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+    }
+  }
+  throw new Error("Failed to fetch blockhash after exhausting all retries.");
+}
+
 export const collectFee = async (
   connection: Connection,
   fromPubkey: PublicKey,
@@ -15,7 +32,7 @@ export const collectFee = async (
       })
     );
 
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
+    const { blockhash, lastValidBlockHeight } = await fetchBlockhashWithRetries(connection);
     transaction.recentBlockhash = blockhash;
     transaction.lastValidBlockHeight = lastValidBlockHeight;
     transaction.feePayer = fromPubkey;

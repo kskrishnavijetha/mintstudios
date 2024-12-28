@@ -59,9 +59,11 @@ const FeeCollector = ({
       
       let errorMessage = "Failed to process fee payment. Please try again.";
       if (error.message?.includes("403")) {
-        errorMessage = "Network connection error. Please try again in a few moments.";
+        errorMessage = "Unauthorized access. Check your API keys or permissions.";
       } else if (error.message?.includes("blockhash")) {
-        errorMessage = "Network congestion detected. Please try again.";
+        errorMessage = "Network congestion detected. Retrying might resolve the issue.";
+      } else if (error.message?.includes("RPC")) {
+        errorMessage = "Unable to connect to the RPC server. Please check your connection or try again later.";
       }
 
       toast({
