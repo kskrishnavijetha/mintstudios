@@ -37,15 +37,10 @@ const FeeCollector = ({
     setIsLoading(true);
 
     try {
-      // Use a more reliable RPC endpoint with higher rate limits
-      const connection = new Connection(
-        "https://api.mainnet-beta.solana.com",
-        {
-          commitment: "confirmed",
-          confirmTransactionInitialTimeout: 60000,
-          wsEndpoint: "wss://api.mainnet-beta.solana.com/",
-        }
-      );
+      const connection = new Connection(clusterApiUrl(NETWORK), {
+        commitment: "confirmed",
+        confirmTransactionInitialTimeout: 60000,
+      });
 
       const confirmation = await collectFee(connection, publicKey, signTransaction);
 
@@ -62,7 +57,6 @@ const FeeCollector = ({
     } catch (error: any) {
       console.error("Fee collection error:", error);
       
-      // More specific error messages based on the error type
       let errorMessage = "Failed to process fee payment. Please try again.";
       if (error.message?.includes("403")) {
         errorMessage = "RPC connection error. Please try again in a few moments.";
