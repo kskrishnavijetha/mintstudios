@@ -6,25 +6,34 @@ export const collectFee = async (
   fromPubkey: PublicKey,
   signTransaction: (transaction: Transaction) => Promise<Transaction>
 ) => {
-  const transaction = new Transaction().add(
-    SystemProgram.transfer({
-      fromPubkey,
-      toPubkey: new PublicKey(FEE_RECEIVER),
-      lamports: FEE_AMOUNT,
-    })
-  );
+  try {
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey: new PublicKey(FEE_RECEIVER),
+        lamports: FEE_AMOUNT,
+      })
+    );
 
-  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-  transaction.recentBlockhash = blockhash;
-  transaction.lastValidBlockHeight = lastValidBlockHeight;
-  transaction.feePayer = fromPubkey;
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    transaction.recentBlockhash = blockhash;
+    transaction.lastValidBlockHeight = lastValidBlockHeight;
+    transaction.feePayer = fromPubkey;
 
-  const signedTx = await signTransaction(transaction);
-  const txid = await connection.sendRawTransaction(signedTx.serialize());
+    const signedTx = await signTransaction(transaction);
+    const txid = await connection.sendRawTransaction(signedTx.serialize(), {
+      skipPreflight: false,
+      preflightCommitment: 'confirmed',
+      maxRetries: 3
+    });
 
-  return connection.confirmTransaction({
-    signature: txid,
-    blockhash,
-    lastValidBlockHeight
-  });
+    return await connection.confirmTransaction({
+      signature: txid,
+      blockhash,
+      lastValidBlockHeight
+    });
+  } catch (error: any) {
+    console.error("Fee collection error details:", error);
+    throw error;
+  }
 };

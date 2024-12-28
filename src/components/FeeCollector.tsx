@@ -37,10 +37,15 @@ const FeeCollector = ({
     setIsLoading(true);
 
     try {
-      const connection = new Connection(clusterApiUrl(NETWORK), {
-        commitment: "confirmed",
-        confirmTransactionInitialTimeout: 120000,
-      });
+      // Use a more reliable RPC endpoint with higher rate limits
+      const connection = new Connection(
+        "https://api.mainnet-beta.solana.com",
+        {
+          commitment: "confirmed",
+          confirmTransactionInitialTimeout: 60000,
+          wsEndpoint: "wss://api.mainnet-beta.solana.com/",
+        }
+      );
 
       const confirmation = await collectFee(connection, publicKey, signTransaction);
 
@@ -56,10 +61,19 @@ const FeeCollector = ({
       onSuccess?.();
     } catch (error: any) {
       console.error("Fee collection error:", error);
+      
+      // More specific error messages based on the error type
+      let errorMessage = "Failed to process fee payment. Please try again.";
+      if (error.message?.includes("403")) {
+        errorMessage = "RPC connection error. Please try again in a few moments.";
+      } else if (error.message?.includes("blockhash")) {
+        errorMessage = "Network congestion detected. Please try again.";
+      }
+
       toast({
         variant: "destructive",
         title: "Error collecting fee",
-        description: error.message || "Failed to process fee payment",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
