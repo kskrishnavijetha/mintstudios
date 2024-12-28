@@ -1,4 +1,4 @@
-import './utils/token'; // Import Buffer polyfill first
+import './utils/buffer'; // Import Buffer polyfill first
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
